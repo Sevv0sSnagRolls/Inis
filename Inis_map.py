@@ -3,7 +3,7 @@ def explore(input):
     return input * 2
 
 
-def new_clans(input):
+def new_clans(input, *f):
     return input * 3
 
 deck = [new_clans, explore]

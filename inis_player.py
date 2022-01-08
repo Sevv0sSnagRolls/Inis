@@ -12,14 +12,14 @@ Knowledge from draft phase means it can maybe workout who is most likely to have
 
 Generate_list_of()... is useful in the drafting phase too, as it will help assign a value to each card
 """
-
+import itertools
 
 class inis_player():
     '''
     Class built from knowledge of other classes extistence
 
     '''
-    def __int__(self):
+    def __int__(self, agent):
         self.player_ID =
         self.is_bren = False
         self.clans_in_reserve = 12
@@ -32,13 +32,27 @@ class inis_player():
         #is left up to a function in this player class
         self.hand = []
 
-        self.victory =
+        #reference to the agent object which will be playing the game
+        self.agent = agent
 
 
-    def generate_list_of_possible_actions(self, game):
+    def generate_draft_selections(self, turn_number):
+        """
+        For drafting phase, this function will
+        - Generate hands possible to keep based on cards passed to the player
+        - Generate lists of actions for each combination of hands to keep and permutation of play order
+        - Generate
+        :param turn_number:
+        :return:
+        """
+        itertools.permutations
+
+    def generate_list_of_possible_actions(self, game, *hand):
         '''
         The idea of the function is to work out what combinations of cards can be played
 
         '''
-        for card in self.hand:
+        hand = self.hand if not hand
+
+        for card in hand:
             actions.append( card(game, self.player_ID) )

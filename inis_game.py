@@ -58,6 +58,18 @@ class inis()
         return
 
     def flip_crows_token(self):
+        """
+        Flip crows token performs a few functions
+        1) Stores - Last state of token direction - i.e [-1,1]
+        2) Finds the new player order for the turn based off of the current Bren
+
+        :returns: basically creates a player order for the turn based off of who is the Bren for
+        the current turn, must be called after the bren is found
+        """
+        #1---
+        self.previous_turn_direction = self.turn_direction
+
+        #2---
         a = self.players.copy()
         K = self.bren
         f = random.choice([-1, 1])

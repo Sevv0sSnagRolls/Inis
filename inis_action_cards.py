@@ -1,16 +1,16 @@
 
 
-def conquest(game, player):
+def conquest_s(game, player):
 
     return
 
 
-def exploration(game, player):
+def exploration_s(game, player):
 
     return
 
 
-def new_alliance(game, player):
+def new_alliance_b(game, player):
 
     return
 
