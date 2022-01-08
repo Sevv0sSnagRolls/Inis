@@ -1,35 +1,41 @@
 """
 MODULE - Cards Handling
 ---------------------------------------------------------
+Uses Factory Pattern to create cards
+probably a bad implementation case for it, but wanted to try it.
 
-Uses Factory Pattern probably a bad implementation case for it, but wanted to try it.
-
+Constructor classes (decks) will build the correct card classes
+as instanced for a game instigated by the setup function.
 """
-
 from abc import ABC, abstractmethod
+
 
 class card(ABC):
     """
     Class to hold meta info around each card function
     name = card name for terminal/UI
     type = [action, epic, advantage]
+
     Every function is designed to have the same set of inputs
-    will possibly decorate every function to the form f(*args, *kwargs)
-    to make sure I can account for every possibility...
+    as each card can have a season, triskel or both
+
+    discard handled seperately
     """
 
-    def __init__(self, name, type):
+    def __init__(self, name, type, blurb):
         self.name = name
         self.type = type
+        self.blurb = blurb
 
     @abstractmethod
-    def season(self, game, player) -> "Season action":
+    def season(self, inis_game_state, player) -> "Season action":
         """
         Possible season action for the card
         """
+        pass
 
     @abstractmethod
-    def triskel(self, game, player) -> "Triskel action":
+    def triskel(self, inis_game_state, player) -> "Triskel action":
         """
         Possible season action for the card
         """
@@ -39,25 +45,30 @@ class card(ABC):
 class conquest(card):
     """
     Specific implementation of ABC 'card' for the conquest card
-
-
+    Must return all possible actions the player can take as a formatted change of game state?
     """
     def __init__(self):
         self.name = 'conquest'
         self.type = 'action'
+        self.blurb = 'Move one or move clans from one territory to an opposing territory'
 
-    def season(self, game, player) -> "season action":
+    def season(self, inis_game_state, player_id) -> 'Season action':
         actions = []
-
+        clans_copy = inis_game_state.clans.copy()
+        for tile_id, clan_qty in enumerate(inis_game_state.clans[player_id]):
+            #relies on adjacent tiles being a dynamically updated list as each tile is added to the game
+            #so it doesn't need to update every time a tile is added'
+            for adjacent_tile_id in tiles[tile_id].adjacent_tiles:
+                for i in range(0, clan_qty):
+                    pass
 
         return actions
 
-    def conquest_action(self, start_tile, end_tile, qty):
-
-        return
-
-    def triskel(self, game, player) -> "Triskel action":
+    def triskel(self, inis_game_state, player) -> 'Triskel action':
         return None
+
+    def __str__(self):
+        return 'conquest'
 
 
 

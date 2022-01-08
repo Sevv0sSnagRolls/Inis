@@ -1,38 +1,54 @@
-import logging
+"""
+Module which holds a class that contains all information about the game state
 
-class inis()
+There are a few methods on the class itself, but the core struct is small so should be fast to copy()
+"""
 
-    def __init__(self, players, map_x=20, map_y=20):
-        self.log = []
+class inis_game_state():
 
+    def __init__(self, players:list, map_x: int=20, map_y:int=20):
         # unique ID of each player created 0,1,2,3,4...
         # these are also the index of the clans placement array
         self.players = players
-        self.winner = None
-        self.player_order = []
-        self.bren = random.choice[players]  # initialise for wtv purpose
-        self.turn_direction = 1
 
-        # map constants
+        #Map representation
+        #I Cheat and initialise a map bigger than the board can become
+        #this might have an effect later on, but should be okay for now... also wastes memory
+        #Each element in the map array is 1/3 of a tile. This allows for "easy" adjacency calculations
+        #assuming offset rows and a bunch of janky stufd
         self.map = np.zeros((map_x, map_y),
-                            dtype=int)  # cheat an initialise a map bigger than the board can become (spare array)
-        self.tiles = []  # empty list of tile objects which will be added in order as reference to each tile
+                            dtype=int)
+
+        #Tiles - References to instances of tile classes which make up the board
+        #Tile index in the tiles list is the identifier used in the map matrix to allocate tile positions
+        #Inis_game_state holds a method to find adjacent tiles and has a dictionary component which keeps
+        #this information up to date
+        self.tiles = []
+        # Inis_game_state holds a method to find adjacent tiles and has a dictionary component which keeps
+        # this information up to date
+        self.adjacent_tiles = {}
+
+        #setup placement of pieces based off of map
         self.capitals = np.zeros(int(map_x * map_y / 3))
         self.sanctuaires = np.copy(self.capitals)
         self.citadels = np.copy(self.capitals)
         self.clans = np.zeros((len(players), map_x, map_y), dtype=int)
 
-        # extras
+        #Setup pieces - Simple quantity based methods for adding subtract from these starting values
         self.deeds_available = 12
         self.sanctuaries_available = 10
         self.citadels_available = 10
 
-        # cards
+        #Cards - Handled by External Classes - These are references to those classes
         self.action_cards = action_deck
         self.epic_tale_cards = epic_tale_deck
-
-        # ID of tile relates to ID of advantage cards
         self.advantage_cards = advantage_card_deck
+
+        #setup semantics
+        self.player_order = []
+        self.bren = random.choice[players]  # initialise for wtv purpose
+        self.turn_direction = 1
+        self.winner = None
 
     def find_chieftans(self, tile):
         '''

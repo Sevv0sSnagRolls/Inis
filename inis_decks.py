@@ -5,12 +5,6 @@ Decks will be passed back to the game module
 
 Cards are written as classes with an action/method specific to each card
 '''
-from random import shuffle
-from inspect import getmembers, isfunction
-import inis_action_cards as actions
-import inis_epic_tale_cards as epic_tales
-import inis_advantage_cards as advantages
-
 
 class inis_deck():
     """
