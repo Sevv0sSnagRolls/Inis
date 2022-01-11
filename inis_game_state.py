@@ -1,15 +1,19 @@
 """
 Module which holds a class that contains all information about the game state
-
 There are a few methods on the class itself, but the core struct is small so should be fast to copy()
 """
+import itertools
 
 class inis_game_state():
 
-    def __init__(self, players:list, map_x: int=20, map_y:int=20):
-        # unique ID of each player created 0,1,2,3,4...
-        # these are also the index of the clans placement array
-        self.players = players
+    def __init__(self, players: list, map_x:int=20, map_y:int=20,):
+        #Depreciated, players list handled elsewhere
+        #Handle to each player object created
+        #Players list needs to be immutable - convert to a set
+        #this means player order can change, but as list indexing is used by player id which is also
+        #the position in a list because I'm lazy, better to make this data structure a const
+        self.players = set( players )
+        self.player_victory_conditions = []
 
         #Map representation
         #I Cheat and initialise a map bigger than the board can become
@@ -19,13 +23,9 @@ class inis_game_state():
         self.map = np.zeros((map_x, map_y),
                             dtype=int)
 
-        #Tiles - References to instances of tile classes which make up the board
-        #Tile index in the tiles list is the identifier used in the map matrix to allocate tile positions
-        #Inis_game_state holds a method to find adjacent tiles and has a dictionary component which keeps
-        #this information up to date
-        self.tiles = []
         # Inis_game_state holds a method to find adjacent tiles and has a dictionary component which keeps
         # this information up to date
+        # dictionary of form { tile_id : [adj_tile_id, adj_tile_id....], tile_id_2, [], ... }
         self.adjacent_tiles = {}
 
         #setup placement of pieces based off of map
@@ -39,18 +39,28 @@ class inis_game_state():
         self.sanctuaries_available = 10
         self.citadels_available = 10
 
-        #Cards - Handled by External Classes - These are references to those classes
-        self.action_cards = action_deck
-        self.epic_tale_cards = epic_tale_deck
-        self.advantage_cards = advantage_card_deck
-
         #setup semantics
         self.player_order = []
-        self.bren = random.choice[players]  # initialise for wtv purpose
+        self.bren = random.choice[self.players]  # initialise for wtv purpose
         self.turn_direction = 1
         self.winner = None
 
-    def find_chieftans(self, tile):
+    def add_game_logger(self, game_events_logger):
+        self.game_event_logger = game_events_logger
+
+    def add_game_decks(self, action_deck, epic_tale_deck, advantage_deck):
+        self.action_cards = action_deck
+        self.epic_tale_cards = epic_tale_deck
+        self.advantage_cards = advantage_deck
+
+    def add_tile_deck(self, tile_deck):
+        #Tiles - References to instances of tile classes which make up the board
+        #Tile index in the tiles list is the identifier used in the map matrix to allocate tile positions
+        #Inis_game_state holds a method to find adjacent tiles and has a dictionary component which keeps
+        #this information up to date
+        self.tiles = tile_deck
+
+    def find_chieftans(self, players):
         '''
         returns index relating to player with max clans in capital
         if max has two values, returns previous Bren
@@ -62,7 +72,7 @@ class inis_game_state():
         else:
             return None
 
-    def find_bren(self):
+    def find_bren(self, players):
         return find_cheiftan(self.capital)
 
     def assign_advantage_cards(self):
@@ -110,7 +120,7 @@ class inis_game_state():
 
         return winner
 
-    def check_victory_conditions(self):
+    def check_victory_conditions(self, player_id: int):
         """
         Updates for all players in a data object which everyone can view (as it's not hidden information)
         Will do this at the start of every round
@@ -118,7 +128,7 @@ class inis_game_state():
         for player in self.players:
             pass
 
-    def find_victory_conditions(self, player):
+    def find_victory_conditions(self, player_id: int):
         '''
         Reason its kept in game class is because every player wants to know
         every other players victory conditions at every stage of the game
@@ -127,12 +137,12 @@ class inis_game_state():
         Will also display to terminal text of how player wins
         :return:
         '''
-        self.victory_exploration()
-        self.victory_cheiftan()
-        self.victory_sanctuaries()
+        self.victory_exploration(player_id)
+        self.victory_cheiftan(player_id)
+        self.victory_sanctuaries(player_id)
         return
 
-    def victory_exploration(self, player):
+    def victory_exploration(self, player_id: int):
         '''
         Checks the exploration victory condition
         Gives how many have been explored and which ones
@@ -140,47 +150,53 @@ class inis_game_state():
         All relies on sparse tiles array being large enough and
         placements allowable functions not allocating clans to tiles that don't exist
         '''
-        explored = [i for i, _ in enumerate(clans[player]) if e > 0]
+        explored = [i for i, _ in enumerate(clans[player_id]) if e > 0]
         victory = True if explored >= 6 else False
         return victory, len(explored), explored
 
-    def victory_sanctuaries(self, player):
+    def victory_sanctuaries(self, player_id: int):
         '''
         Checks player position against each sanctuary
         Uses a bit of array maths to make things ez
         '''
-        sanctuaries = np.multiply(clans[player] / clans[player], self.sanctuaires)
+        sanctuaries = np.multiply(clans[player] / clans[player_id], self.sanctuaires)
         qty_sanctuaries = np.sum(sanctuaries)
         victory = True if qty_sanctuaries >= 6 else False
         return victory, qty_sanctuaries, sanctuaries
 
-    def victory_cheiftan(self, player):
+    def victory_cheiftan(self, player_id: int):
         '''
         Needs to be chieftan over atleast 6 other clans
         Use array maths in the clans object
         returns T/F, qty, which tiles they are in and how many from each
         '''
-        clans_ruled = np.zeros((len(self.tiles), 1), dtype=int)
-        for i, e in enumerate(clans_ruled):
-            if np.argmax(clans[:, i]) == clans[player][i]:
-                clans_ruled[i] = np.sum(clans[:, i]) - clans[player][i]
-        qty_clans_ruled = np.sum(clans_ruled)
-        victory = True if qty_clans_ruled >= 6 else False
-        return victory, qty_clans_ruled, clans_ruled
+        clans_ruled_over = np.zeros((len(self.tiles), 1), dtype=int)
+        for i, e in enumerate(clans_ruled_over):
+            if np.argmax(clans[:, i]) == clans[player_id][i]:
+                clans_ruled_over[i] = np.sum(clans[:, i]) - clans[player_id][i]
+        qty_clans_ruled_over = np.sum(clans_ruled_over)
+        victory = True if qty_clans_ruled_over >= 6 else False
+        return victory, qty_clans_ruled_over, clans_ruled_over
 
+
+class victory_conditions():
+    """
+    Hold information about each victory condition for each player
+    """
+    def __init__(self, player_id, condition):
+        self.player_id = player_id
+        self.condition = condition
+        self.victory = False
+        self.qty = 0
+        self.positions = []
+
+    def update_victory_conditions(self, victory_bool, qty, positions):
+        self.victory = victory_bool
+        self.qty = qty
+        self.positions = positions
 
 
 if __name__ == "__main__":
     #TESTS
-    game = inis(2)
-
-    #check
-
-    #check map build
-
-    #check victory conditions
-    player0 = player(0)
-    player1 = player(1)
-
 
 

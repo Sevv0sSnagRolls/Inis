@@ -19,7 +19,9 @@ draft_phase_columns = ['round_number', 'player', 'cards_dealt', 'cards_kept', 'c
 
 class game_logger():
 
-    def __init__(self):
+    def __init__(self, number_of_players: int):
+        self.number_of_players = number_of_players
         round_number = 0
         draft_phase_moves = []
+        pass
 

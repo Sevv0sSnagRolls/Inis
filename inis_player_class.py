@@ -14,15 +14,11 @@ Generate_list_of()... is useful in the drafting phase too, as it will help assig
 """
 import itertools
 
-#might use ABC method for handling various subtypes of AI classes?
 
 class inis_player():
 
-    def __int__(self, player_id, agent):
+    def __int__(self, player_id):
         self.player_id = player_id
-
-        # reference to the agent object which will be playing the game
-        self.agent = agent
 
         self.is_bren = False
         self.clans_in_reserve = 12
@@ -46,6 +42,8 @@ class inis_player():
         """
         itertools.permutations
 
+        return
+
     def generate_list_of_possible_actions(self, game, *hand):
         '''
         The idea of the function is to work out what combinations of cards can be played
@@ -56,6 +54,10 @@ class inis_player():
         for card in hand:
             actions.append( card(game, self.player_ID) )
 
+        return
 
 
 
+if __name__=="__main__":
+    #Test 1 - Build a new game setup?
+    #probably best to do in another module like main

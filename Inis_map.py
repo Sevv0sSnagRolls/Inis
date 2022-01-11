@@ -1,4 +1,4 @@
-
+"""
 def explore(input):
     return input * 2
 
@@ -10,9 +10,6 @@ deck = [new_clans, explore]
 
 print( [ e(2) for e in deck ])
 
-
-
-'''
 
 
 class inis_deck():
@@ -41,7 +38,7 @@ m = Messenger(info="some information", b=['a', 'list'])
 m.more = 11
 print m.info, m.b, m.more
 
-'''
+"""
 
 class A():
 
@@ -59,7 +56,10 @@ class C(A):
     def test(self, input):
         return input * 3
 
+if __name__ == '__main__':
+    a = A()
+    print( type(a) )
+    D = [B(), C()]
 
-D = [B(), C()]
 
 
