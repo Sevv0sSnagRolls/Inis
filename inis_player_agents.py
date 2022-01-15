@@ -2,7 +2,7 @@
 
 """
 from abc import ABC, abstractmethod
-import inis_player_class
+
 
 class agent(ABC):
     """
@@ -20,22 +20,43 @@ class agent(ABC):
         4.2) Peacefully resolve?
         4.3) Attack, retreat,
     """
-    def __init__(self, name: str, player: object, reference_players: list, reference_game: object):
+    def __init__(self, player_id: int, name: str):
+        self.player_id = player_id
+
         self.name = name
-
-        #points to the instance of the class which holds information about the components etc
-        #for agent to use in game
-        self.player = player
-
         #points to instances of player classes created which agent can use to model, simulate and store
         #visibile information about other players in the game
         #constructed as a list with the player_id == the player id/index of player in the game
         #so game state winners can "easily" be converted to mapping out what players might do...
-        self.reference_players = reference_players
+        #self.reference_players = {}
 
         #game object for reference that gets updated as part of each main game loop
         #this allows agent to simulate or model shit...
-        self.reference_game = reference_game
+        #self.reference_game = None
+
+        self.is_bren = False
+        self.clans_in_reserve = 12
+        self.deeds = 0
+        # Hand ==  list of card objects. Each Card has a name, type and function which is points to
+        # Each Card will accept the game object and player and return the possible outcomes
+        # from playing the card
+        # the actual logic of what cards can be played in what order (permutations) for each turn
+        # is left up to a function in this player class
+        self.hand = []
+
+    def generate_list_of_possible_actions(self, game, *hand):
+        '''
+        The idea of the function is to work out what combinations of cards can be played
+
+        '''
+        hand = self.hand if not hand
+
+        for card in hand:
+            actions.append(card(game, self.player_ID))
+
+        return
+
+    def turn_actions(self):
 
     @abstractmethod
     def draft_phase_select_cards(self):
@@ -43,6 +64,10 @@ class agent(ABC):
 
     @abstractmethod
     def play_turn(self):
+        """
+        Return action type
+        :return:
+        """
         pass
 
     @abstractmethod

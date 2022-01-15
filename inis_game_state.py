@@ -6,13 +6,11 @@ import itertools
 
 class inis_game_state():
 
-    def __init__(self, players: list, map_x:int=20, map_y:int=20,):
-        #Depreciated, players list handled elsewhere
-        #Handle to each player object created
-        #Players list needs to be immutable - convert to a set
-        #this means player order can change, but as list indexing is used by player id which is also
-        #the position in a list because I'm lazy, better to make this data structure a const
-        self.players = set( players )
+    def __init__(self, players: dict, map_x:int=20, map_y:int=20,):
+        #Create an index dict of players
+        self.players = players #{ i:player for i, player in enumerate(players) }
+
+        #unsure how to store this right now...
         self.player_victory_conditions = []
 
         #Map representation
@@ -41,32 +39,24 @@ class inis_game_state():
 
         #setup semantics
         self.player_order = []
-        self.bren = random.choice[self.players]  # initialise for wtv purpose
         self.turn_direction = 1
         self.winner = None
 
-    def add_game_logger(self, game_events_logger):
-        self.game_event_logger = game_events_logger
+        self.bren = random.choice[self.players.keys()]
 
-    def add_game_decks(self, action_deck, epic_tale_deck, advantage_deck):
-        self.action_cards = action_deck
-        self.epic_tale_cards = epic_tale_deck
-        self.advantage_cards = advantage_deck
-
-    def add_tile_deck(self, tile_deck):
-        #Tiles - References to instances of tile classes which make up the board
-        #Tile index in the tiles list is the identifier used in the map matrix to allocate tile positions
-        #Inis_game_state holds a method to find adjacent tiles and has a dictionary component which keeps
-        #this information up to date
-        self.tiles = tile_deck
+    def add_attributes(self, **kwargs: dict) -> None:
+        if len(kwargs) > 0:
+            for key, value in kwargs.items():
+                setattr(self, key, value)
+        return
 
     def find_chieftans(self, players):
         '''
         returns index relating to player with max clans in capital
         if max has two values, returns previous Bren
         '''
-        for x, y in itertools.product():
-
+        for clan in self.clans:
+            pass
         if
             return index.max()
         else:

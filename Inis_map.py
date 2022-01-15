@@ -40,26 +40,19 @@ print m.info, m.b, m.more
 
 """
 
-class A():
+class testclass:
 
-    def __int__(self):
-        self.name = ''
+    def add_attributes(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
-class B(A):
-    name = 'B'
-    def test(self, input):
-        return input*2
-
-
-class C(A):
-    name = 'C2'
-    def test(self, input):
-        return input * 3
 
 if __name__ == '__main__':
-    a = A()
-    print( type(a) )
-    D = [B(), C()]
+    d = { 'key1': 10, 'key2': 20, 'key3': 30}
+    a = testclass()
+    a.add_attributes( **d )
+    print(dir(a))
+    print(a.key1)
 
 
 
