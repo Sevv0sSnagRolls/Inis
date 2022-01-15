@@ -67,6 +67,8 @@ if __name__ == "__main__":
     a = create_card_objects('inis_action_cards')
     print( a['Bard'].triskel(0, 0) )
 
+    for _, card in a.items():
+        card.display_card()
     #TEST 3 - Deal multiple Cards
 
     #TEST 4 - Deal Action Card Deck

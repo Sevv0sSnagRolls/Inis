@@ -13,8 +13,8 @@ class Conquest(Card):
         self.name = 'Conquest'
         self.type = 'Action'
         self.blurb =   "Season Action: \n" \
-                     + "Chose 1 territory. You may move any number of your clans from territories adjacent" \
-                     + "to this chosen territory into it\n"
+                     + " Chose 1 territory. You may move any number of your clans from territories adjacent" \
+                     + " to this chosen territory into it\n"
 
     def season(self, inis_game_state, player_id) -> 'Season action':
         actions = []
@@ -143,7 +143,7 @@ class Festival(Card):
                        " place one of your clans and the festival token there \n" \
                      + " Any player that initiates a clash in that territory removes one of \n" \
                      + " their clans from there. At the end of the seasons round. \n" \
-                     + " remove the festival token"
+                     + " remove the festival token\n"
 
     def season(self, inis_game_state, player_id) -> 'Season action':
         actions = []
@@ -168,7 +168,7 @@ class CraftsmenAndPeasants(Card):
         self.type = 'action'
         self.blurb =   "Season Action: \n" \
                      + " In each territory where you are present, you may place 1 clan" \
-                     + " for each citadel in that territory"
+                     + " for each citadel in that territory\n"
 
     def season(self, inis_game_state, player_id) -> 'Season action':
         actions = []
@@ -193,7 +193,7 @@ class Geis(Card):
         self.type = 'action'
         self.blurb =   "Triskel Action: \n" \
                      + " When an opponent plays an action card," \
-                     + " Ignore the effect and discard it"
+                     + " Ignore the effect and discard it\n"
 
     def season(self, inis_game_state, player_id) -> 'Season action':
         return None
@@ -230,7 +230,7 @@ class MasterCraftsman(Card):
                      + " OR \n" \
                      + " Triskel Action \n" \
                      + " After you play and epic tale card, instead of discarding it, \n" \
-                     + " give it to another player and gain one deed"
+                     + " give it to another player and gain one deed\n"
 
     def season(self, inis_game_state, player_id) -> 'Season action':
         return None
@@ -298,7 +298,7 @@ class Bard(Card):
                      + " OR \n" \
                      + " Triskel Action \n" \
                      + " After 1 of your manoeuvres removes one or more opposing clans, \n" \
-                     + " gain 1 deed"
+                     + " gain 1 deed \n"
 
     def season(self, inis_game_state, player_id) -> 'Season action':
         return None
