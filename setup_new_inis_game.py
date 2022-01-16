@@ -54,6 +54,9 @@ def setup_inis_instance(player_agents: list, logging: bool = False) -> object:
 
     tile_deck = create_tiles()
     action_deck, epic_tale_deck, advantage_deck = build_decks(n)
+
+    connect_tiles_and_advantage_cards(tile_deck, advantage_deck)
+
     kwargs = {}
     if logging:
         kwargs.update( { 'game_log': game_logger() } )
@@ -115,6 +118,22 @@ def build_player_reference_instances_and_connect_to_agents(player_agents: dict) 
         player_agent.player_references = player_references.copy()
     return
 
+
+def connect_tiles_and_advantage_cards(tile_deck, advantage_deck) -> None:
+    """
+    Tile deck and advantage cards are created independently
+
+    Need to connect the tile object to the card to bring the card into play
+    when the tile is drawn
+
+    :param tile_deck:
+    :param advantage_deck:
+    :return: None
+    """
+
+    for tile in tile_deck:
+        tile.name =
+        setattr(tile, 'advantage_card', )
 
 #if __name__=="__main__":
     #Test 1 - Build a new game setup?

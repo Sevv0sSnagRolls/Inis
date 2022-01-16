@@ -50,14 +50,9 @@ class inis_deck():
         self.shuffle_deck()
 
 
-class action_card_deck(inis_deck):
-
-    def assembly_deal(self):
-        for card in self.cards:
-            deal_card
-
-
 class advantage_card_deck(inis_deck):
 
     def advantage_card_deal(self):
         pass
+
+
