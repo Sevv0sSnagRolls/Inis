@@ -90,6 +90,7 @@ class Card(ABC):
         print("|" + line + remainder*' ' + "|")
         self.j += 1
 
+
 def create_card_objects_from_module(module_name: str, player_count: int) -> list:
     """
     Bit fancy, relies on modules having cards of only one type
@@ -114,11 +115,54 @@ def create_card_objects(player_count: int) -> dict:
     cards = dict( (module, create_card_objects_from_module(module, player_count)) for module in modules)
     return cards
 
-def test_cards(player_count: int) -> None:
-    a = create_card_objects(player_count)
-    for module, card_deck in a.items():
-        for _, card in card_deck.items():
-            card.display_card()
+
+def test_cards_module(display_cards=False) -> None:
+    import inis_constants
+    tests_passed = False
+
+    for player_count in range(2, 4):
+        a = create_card_objects(player_count)
+
+        for module, card_deck in a.items():
+
+            if display_cards:
+                for _, card in card_deck.items():
+                    card.display_card()
+
+            if module == 'inis_action_cards':
+                if player_count == 4:
+                    if len(card_deck) == 17:
+                        tests_passed = True
+                    else:
+                        tests_passed = False
+                else:
+                    if len(card_deck) == 13:
+                        tests_passed = True
+                    else:
+                        tests_passed = False
+
+            if module == 'inis_advantage_cards':
+                if len(card_deck) == len(inis_constants.TILES):
+                    tests_passed = True
+                else:
+                    tests_passed = False
+
+                tile_names = [ tile[0] for tile in inis_constants.TILES]
+                for _, card in card_deck.items():
+                    if card.name not in tile_names:
+                        print(card.name)
+                        print(tile_names)
+                        tests_passed = False
+                        print("                ")
+                        print("Advantage cards names failed")
+                        print("                ")
+                        return
+
+    if tests_passed:
+        print("                ")
+        print("ALL TESTS PASSED")
+        print("                ")
+
     return
 
 if __name__ == "__main__":
@@ -127,4 +171,4 @@ if __name__ == "__main__":
     #A.display_card()
 
     #TEST 2 - Deal a Card
-    test_cards(2)
+    test_cards_module()

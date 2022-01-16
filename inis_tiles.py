@@ -3,9 +3,8 @@ TILES
 ----------------------------------------------------
 Module to hold tile objects for inis game
 
-Tiles will have their own functions related to them?
-
-Cards related to tiles will be handled seperately...
+Cards related to tiles will be handled seperately.
+Will be joined to tile objects later on
 """
 
 import random
@@ -16,6 +15,7 @@ import traceback
 class _TileDeck:
 
     def __init__(self, tiles: list):
+        self.tiles = tiles
         self.undrawn = tiles
         self.drawn = []
 
@@ -118,7 +118,9 @@ class _ProcessDirector:
 def create_tiles() -> object:
     '''
     Actual function called to make tiles
-    :return:
+
+    :returns: TileDeck object which contains a list of tile objects and functionality to deal them
+    These tile objects need to be connected to advantage card objects or with another dict connect them?? idk
     '''
     import inis_constants
     tiles = inis_constants.TILES.copy()
@@ -130,6 +132,7 @@ def create_tiles() -> object:
 
 if __name__ == "__main__":
     tile_deck = create_tiles()
+    print(tile_deck)
     for i in range(0, len(tile_deck.undrawn)):
         a = tile_deck.draw_tile()
         print( a.name )

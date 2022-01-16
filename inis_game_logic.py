@@ -5,13 +5,8 @@ Module for holding all the functions that change the game state class.
 Essentially enacting the ruleset
 
 '''
-#Object for allowing game instances to start at a specific spot
-#in the turn order with a given game state object
 import itertools
-
-GAME_TURNS = { 'assembly' : 0,
-               'drafting' : 1,
-               'seasons'  : 2 }
+import inis_constants.GAME_TURNS as GAME_TURNS
 
 
 def play_inis_game(inis_game_obj: object, turn_start: str = 'assembly',

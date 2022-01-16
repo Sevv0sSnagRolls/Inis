@@ -1,13 +1,16 @@
-'''
+"""
+-----------------------------------------------------
+inis_decks.py
+-----------------------------------------------------
 Module to create all cards and all decks used in inis
-
 Decks will be passed back to the game module
-
 Cards are written as classes with an action/method specific to each card
-'''
+import or card objects is done by module naming conventions
+construction of card deck
+"""
 import random
 
-class inis_deck():
+class inis_card_deck():
     """
     Meta class to hold all card objects of a certain type
 

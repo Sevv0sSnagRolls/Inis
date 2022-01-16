@@ -12,7 +12,7 @@ TILES = [
          ['Plains',                "StandardTile",      {'matplotlib' : 'mediumaquqmarine'} ],
          ['Mountains',             "Mountains",         {'matplotlib' : 'lavender'}   ],
          ['Lost Vale',             "StandardTile",      {'matplotlib' : 'teal'}       ],
-         ['Gates of Tir Na Nog',   "GatesOfTirNaNog",   {'matplotlib' : 'lawngreen'}  ],
+         ['Gates Of Tir Na Nog',   "GatesOfTirNaNog",   {'matplotlib' : 'lawngreen'}  ],
          ['Forest',                "StandardTile",      {'matplotlib' : 'forestgreen'}],
          ['Moor',                  "StandardTile",      {'matplotlib' : 'seagreen'}    ],
          ['Stone Circle',          "StoneCircle",       {'matplotlib' : 'darkviolet'}  ],
@@ -25,4 +25,7 @@ TILES = [
         ]
 
 
+GAME_TURNS = { 'assembly' : 0,
+               'drafting' : 1,
+               'seasons'  : 2 }
 

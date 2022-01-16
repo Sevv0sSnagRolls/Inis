@@ -11,6 +11,7 @@ from inis_game_state import inis_game_state
 from inis_tiles import create_tiles
 import inis_player_agents
 
+
 def setup_inis(player_agents:dict) -> object:
     """
     Function responsible for calling all sub modules and functions to setup game and players
@@ -52,42 +53,46 @@ def setup_inis_instance(player_agents: list, logging: bool = False) -> object:
 
     game_state_instance = inis_game_state( player_agents )
 
-    tile_deck = create_tiles()
+    territories = create_tiles()
     action_deck, epic_tale_deck, advantage_deck = build_decks(n)
 
-    connect_tiles_and_advantage_cards(tile_deck, advantage_deck)
+    tile_advantage_pairs = connect_tiles_and_advantage_cards(territories, advantage_deck)
 
     kwargs = {}
     if logging:
         kwargs.update( { 'game_log': game_logger() } )
+
     kwargs.update( {
-                     'tile_deck' : tile_deck,
+                     'tile_deck' : territories,
                      'action_deck': action_deck,
                      'epic_tale_deck': epic_tale_deck,
                      'advantage_deck' : advantage_deck
+                     'tile_advantage_pairs' : tile_advantage_pairs
                     } )
 
     return game_state_instance
 
 
-def setup_game_board(inis_game_obj: object):
+def setup_game_board(inis_game_state: object):
     """
     IDK how to handle where to place the initial clans??
     Maybe just use a random choice function for player agent for now??
     :return:
     """
-    for players in player:
-        place
+    for player in inis_game_state.players:
+        pass
 
 
-def place_initial_tiles():
+def place_initial_tiles(inis_game_state):
     """
     Tile deck can probably be built from the same class as all the other decks...
 
     :return:
     """
     initial_tiles = [inis_game_state.tile_deck.draw_tile() for i in range(0, len(inis_game_state.players)) ]
+    starting_position = int(inis_game_state.x/2), int(inis_game_state.y/2)
 
+    return initial_tiles
 
 def validate_player_agents(player_agents) -> bool:
     """
@@ -119,21 +124,29 @@ def build_player_reference_instances_and_connect_to_agents(player_agents: dict) 
     return
 
 
-def connect_tiles_and_advantage_cards(tile_deck, advantage_deck) -> None:
+def connect_tiles_and_advantage_cards(tile_deck: object, advantage_deck: object) -> dict:
     """
     Tile deck and advantage cards are created independently
 
     Need to connect the tile object to the card to bring the card into play
     when the tile is drawn
 
-    :param tile_deck:
-    :param advantage_deck:
-    :return: None
-    """
+    reliance is on both sets of classes being correctly named in accordance with TILES
+    list object in inis_constants.py
 
-    for tile in tile_deck:
-        tile.name =
-        setattr(tile, 'advantage_card', )
+    :param tile_deck: object that holds info about all tile object
+            parameter to get this info out is '.tiles'
+    :param advantage_deck: object that hold info about all advantage cards
+            parameter to get this info out is '.cards'
+    :return: dict of the object references which inis_game_state can use to find and assign cards etc
+    """
+    assert 'tiles' in dir(tile_deck)
+    assert 'cards' in dir(advantage_deck)
+
+    tile_card_pairs = dict( (tile, card) for tile in tile_deck.tiles \
+                            for card in advantage_deck.cards if tile.name == card.name)
+    return tile_card_pairs
+
 
 #if __name__=="__main__":
     #Test 1 - Build a new game setup?

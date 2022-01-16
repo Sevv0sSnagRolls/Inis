@@ -275,7 +275,7 @@ class Hills(Card):
 class LostVale(Card):
 
     def __init__(self):
-        self.name = 'LostVale'
+        self.name = 'Lost Vale'
         self.type = 'Advantage'
         self.min_player_count = 2
         self.blurb = "Triskel Action:" \
