@@ -52,12 +52,13 @@ def setup_inis_instance(player_agents: list, logging: bool = False) -> object:
 
     game_state_instance = inis_game_state( player_agents )
 
+    tile_deck = create_tiles()
     action_deck, epic_tale_deck, advantage_deck = build_decks(n)
     kwargs = {}
     if logging:
         kwargs.update( { 'game_log': game_logger() } )
     kwargs.update( {
-                     'tile_deck' : create_tiles(),
+                     'tile_deck' : tile_deck,
                      'action_deck': action_deck,
                      'epic_tale_deck': epic_tale_deck,
                      'advantage_deck' : advantage_deck

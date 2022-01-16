@@ -5,6 +5,7 @@ Decks will be passed back to the game module
 
 Cards are written as classes with an action/method specific to each card
 '''
+import random
 
 class inis_deck():
     """
@@ -24,7 +25,7 @@ class inis_deck():
         self.deck_size = len(self.cards) + len(self.discard)
 
     def shuffle_deck(self):
-        shuffle(self.cards)
+        random.shuffle(self.cards)
         return
 
     def deal_cards(self, qty=1):
@@ -35,17 +36,18 @@ class inis_deck():
         """
         assert qty <= self.deck_size
 
-        if not self.cards:
-            self.cards = self.discard
-            self.discard = []
-            self.shuffle_deck()
-
+        #kind of cheating here as it's not the proper way to use up a deck and then reshuffle discard...
         if qty > len(self.cards):
-            remainder = qty - len(self.cards)
-            self.discard += [self.cards.pop() for _ in range(0, len(self.cards)) ]
-            self.deal_cards(remainder) #this is cheeky and a bit shit
+            self.reset_deck()
+
+        self.discard += [self.cards.pop() for _ in range(0, len(self.cards))]
 
         return self.discard[-qty:]
+
+    def reset_deck(self):
+        self.cards = self.discard
+        self.discard = []
+        self.shuffle_deck()
 
 
 class action_card_deck(inis_deck):

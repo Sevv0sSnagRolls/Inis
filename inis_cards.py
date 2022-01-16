@@ -9,7 +9,7 @@ as instanced for a game instigated by the setup function.
 """
 from abc import ABC, abstractmethod
 import sys, inspect
-import inis_action_cards
+import importlib
 
 class Card(ABC):
     """
@@ -50,6 +50,7 @@ def create_card_objects(module_name: str) -> list:
     :param module_name:
     :return:
     """
+    importlib.import_module(module_name)
     action_cards = {}
     for name, obj in inspect.getmembers(sys.modules[module_name]):
         if ( inspect.isclass(obj) ) and (not inspect.isabstract(obj)):
@@ -58,19 +59,20 @@ def create_card_objects(module_name: str) -> list:
     return action_cards
 
 
+
+def test_cards():
+    modules = ['inis_action_cards', 'inis_advantage_cards']
+
+    for module in modules:
+        a = create_card_objects(module)
+        for _, card in a.items():
+            card.display_card()
+
+
 if __name__ == "__main__":
     #TEST 1 = Create Card Decks
     #A = Warlord()
     #A.display_card()
 
     #TEST 2 - Deal a Card
-    a = create_card_objects('inis_action_cards')
-    print( a['Bard'].triskel(0, 0) )
-
-    for _, card in a.items():
-        card.display_card()
-    #TEST 3 - Deal multiple Cards
-
-    #TEST 4 - Deal Action Card Deck
-
-    #TEST 5 - Deal Action Card Deck
+    test_cards()

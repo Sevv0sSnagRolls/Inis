@@ -3,6 +3,7 @@ Module which holds a class that contains all information about the game state
 There are a few methods on the class itself, but the core struct is small so should be fast to copy()
 """
 import itertools
+import random
 
 class inis_game_state():
 
@@ -42,7 +43,7 @@ class inis_game_state():
         self.turn_direction = 1
         self.winner = None
 
-        self.bren = random.choice[self.players.keys()]
+        self.brenn = random.choice[self.players.keys()]
 
     def add_attributes(self, **kwargs: dict) -> None:
         if len(kwargs) > 0:

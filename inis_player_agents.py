@@ -58,6 +58,7 @@ class agent(ABC):
 
     def turn_actions(self):
 
+
     @abstractmethod
     def draft_phase_select_cards(self):
         pass
