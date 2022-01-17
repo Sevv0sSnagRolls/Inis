@@ -1,16 +1,10 @@
 """
-WHY
-
+----------------------------------------------
+inis_main.py
+---------------------------------------------
+Here to be process director for either using pygame or wtv for setups and divert
+for AI only play, human play who knows.
 """
-
-from setup_new_inis_game import setup_inis
-import inis_game_logic
-import inis_player_agents
-
-#Object for allowing game instances to start at a specific spot in the turn order with a given game state object
-GAME_TURNS = { 'assembly' : 0,
-               'drafting' : 1,
-               'seasons'  : 2 }
 
 
 def main() -> None:
@@ -48,7 +42,6 @@ def start_new_game() -> None:
 def select_players() -> dict:
     """
     Need some method of selecting who is playing each game
-
     :return:
     """
     player_0 = {
@@ -81,6 +74,20 @@ def select_players() -> dict:
 
 
 def watch_game(database, game_index) -> None:
+    """
+    Aim is to basically setup a cmd line interaction with main
+
+    which will start a webpage and JS file
+    s
+    or just have standalone JS which will replace a game from game log
+    or SQL database of previous games
+    maybe should have built this in JS?? fuck me
+
+    :param database:
+    :param game_index:
+    :return:
+    """
+
     return
 
 

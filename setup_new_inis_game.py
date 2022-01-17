@@ -25,12 +25,12 @@ def setup_inis(player_agents:dict) -> object:
     player_agent_instances = build_player_reference_instances_and_connect_to_agents( player_agents )
     build_player_reference_instances_and_connect_to_agents( player_agents )
     current_game_state = setup_inis_instance( player_agent_instances, logging=True )
+    setup_game_board(current_game_state)
 
     #setup fake games for the players for sims...
     #
     #...
     #
-
     return current_game_state
 
 
@@ -48,40 +48,39 @@ def setup_inis_instance(player_agents: list, logging: bool = False) -> object:
     """
     if validate_player_agents(player_agents) == False:
         raise Exception("One or more player agents are incorrectly built or referenced")
-
     n = len(player_agents)
-
     game_state_instance = inis_game_state( player_agents )
-
-    territories = create_tiles()
+    tiles = create_tiles()
     action_deck, epic_tale_deck, advantage_deck = build_decks(n)
-
-    tile_advantage_pairs = connect_tiles_and_advantage_cards(territories, advantage_deck)
-
+    tile_advantage_pairs = connect_tiles_and_advantage_cards(tiles, advantage_deck)
     kwargs = {}
     if logging:
         kwargs.update( { 'game_log': game_logger() } )
-
     kwargs.update( {
-                     'tile_deck' : territories,
+                     'tile_deck' : tiles,
                      'action_deck': action_deck,
                      'epic_tale_deck': epic_tale_deck,
                      'advantage_deck' : advantage_deck
                      'tile_advantage_pairs' : tile_advantage_pairs
                     } )
-
     return game_state_instance
 
 
 def setup_game_board(inis_game_state: object):
     """
-    IDK how to handle where to place the initial clans??
-    Maybe just use a random choice function for player agent for now??
+    Initial Tile Draw
+
+    Initial Clan Placement
+
+    Will just randomise Capital Territory for now
+    Capital can just be tile index 0 for ease of my life... maybe this is dumb
+
     :return:
     """
+    place_initial_tiles(inis_game_state)
+
     for player in inis_game_state.players:
         pass
-
 
 def place_initial_tiles(inis_game_state):
     """

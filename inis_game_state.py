@@ -7,7 +7,7 @@ import random
 
 class inis_game_state():
 
-    def __init__(self, players: dict, map_x:int=20, map_y:int=20,):
+    def __init__(self, players: dict, map_x:int=20, map_y:int=20):
         #Create an index dict of players
         self.players = players #{ i:player for i, player in enumerate(players) }
 
@@ -44,6 +44,7 @@ class inis_game_state():
         self.winner = None
 
         self.brenn = random.choice[self.players.keys()]
+
 
     def add_attributes(self, **kwargs: dict) -> None:
         if len(kwargs) > 0:

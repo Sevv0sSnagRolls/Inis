@@ -9,6 +9,7 @@ import or card objects is done by module naming conventions
 construction of card deck
 """
 import random
+from inis_cards import create_card_objects
 
 class inis_card_deck():
     """
@@ -59,3 +60,11 @@ class advantage_card_deck(inis_deck):
         pass
 
 
+
+def create_card_decks():
+
+
+
+
+if __name__ == "__main__":
+    #h

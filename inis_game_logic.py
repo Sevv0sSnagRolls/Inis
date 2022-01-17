@@ -6,7 +6,7 @@ Essentially enacting the ruleset
 
 '''
 import itertools
-import inis_constants.GAME_TURNS as GAME_TURNS
+from inis_constants import GAME_TURNS
 
 
 def play_inis_game(inis_game_obj: object, turn_start: str = 'assembly',
@@ -61,7 +61,7 @@ def play_inis_turn(inis_game_obj: object, turn_start_number: int) -> bool:
     return False
 
 
-def play_inis_assembly_phase(inis_game_obj: object, inis_game_state) -> bool:
+def play_inis_assembly_phase(inis_game_state) -> bool:
     """
     Follows through Inis assembly phase procedure
 
@@ -70,7 +70,7 @@ def play_inis_assembly_phase(inis_game_obj: object, inis_game_state) -> bool:
     :param inis_game_state:
     :return: game_state and winner ture/false
     """
-    if inis_game_obj.inis_game_state.assembly_phase_check_for_victory():
+    if inis_game_state.assembly_phase_check_for_victory():
         return True
 
     #run functions/methods of the class to update the game state
