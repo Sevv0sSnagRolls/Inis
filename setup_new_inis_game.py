@@ -2,7 +2,6 @@
 SETUP
 --------------------------------------------------------------
 Creates all objects and references necessary to start a new game
-
 Validates the agents passed exist and can be used for the game
 """
 from inis_decks import build_decks
@@ -14,18 +13,16 @@ import inis_player_agents
 
 def setup_inis(player_agents:dict) -> object:
     """
-    Function responsible for calling all sub modules and functions to setup game and players
-    to allow turns to be played
-
-    Players need to be of a particular format, may need some validatin function here for that purpose
+    Sets up game state variable and dependencies based on players
     """
-    if validate_player_agents(player_agents) == False:
+    if not validate_player_agents(player_agents):
         raise Exception("One or more player agents are incorrectly built or referenced")
 
     player_agent_instances = build_player_reference_instances_and_connect_to_agents( player_agents )
     build_player_reference_instances_and_connect_to_agents( player_agents )
     current_game_state = setup_inis_instance( player_agent_instances, logging=True )
-    setup_game_board(current_game_state)
+
+    #setup_game_board(current_game_state)
 
     #setup fake games for the players for sims...
     #
@@ -34,14 +31,12 @@ def setup_inis(player_agents:dict) -> object:
     return current_game_state
 
 
-def setup_inis_instance(player_agents: list, logging: bool = False) -> object:
+def setup_inis_instance(player_agents: dict, logging: bool = False) -> object:
     """
     Function to construct Inis instances
-
-    Variability is whether or not the player agents are the real ones or fake ones/sims
+    Variability is whethe the player agents are the real ones or fake ones/sims
     which the agents can use to simulate the game from the current game state
     Functionality in the game state class is copying to other game state instances
-
     :param player_agents:
     :rtype: object
     :return:
@@ -60,7 +55,7 @@ def setup_inis_instance(player_agents: list, logging: bool = False) -> object:
                      'tile_deck' : tiles,
                      'action_deck': action_deck,
                      'epic_tale_deck': epic_tale_deck,
-                     'advantage_deck' : advantage_deck
+                     'advantage_deck' : advantage_deck,
                      'tile_advantage_pairs' : tile_advantage_pairs
                     } )
     return game_state_instance
@@ -82,6 +77,7 @@ def setup_game_board(inis_game_state: object):
     for player in inis_game_state.players:
         pass
 
+
 def place_initial_tiles(inis_game_state):
     """
     Tile deck can probably be built from the same class as all the other decks...
@@ -92,6 +88,7 @@ def place_initial_tiles(inis_game_state):
     starting_position = int(inis_game_state.x/2), int(inis_game_state.y/2)
 
     return initial_tiles
+
 
 def validate_player_agents(player_agents) -> bool:
     """
@@ -147,5 +144,32 @@ def connect_tiles_and_advantage_cards(tile_deck: object, advantage_deck: object)
     return tile_card_pairs
 
 
-#if __name__=="__main__":
+if __name__=="__main__":
     #Test 1 - Build a new game setup?
+    player_0 = {
+                name: 'Doug',
+                player_agent: inis_player_agents.dumbass_test_agent()
+                }
+
+    player_1 = {
+                name: 'John',
+                player_agent: inis_player_agents.dumbass_test_agent()
+                }
+
+    player_2 = {
+                name: 'Brad',
+                player_agent: inis_player_agents.dumbass_test_agent()
+                }
+
+    player_3 = {
+                name: 'Test 2',
+                player_agent: inis_player_agents.dumbass_test_agent()
+                }
+
+    player_agents = { 0: player_0,
+                      1: player_1,
+                      2: player_2,
+                      3: player_3
+                      }
+
+    setup_inis(player_agents)

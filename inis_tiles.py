@@ -4,13 +4,8 @@ TILES
 Module to hold tile objects for inis game
 
 Cards related to tiles will be handled seperately.
-Will be joined to tile objects later on
+Will be joined to tile objects in setup module
 """
-
-import random
-from abc import ABC, abstractmethod
-import traceback
-
 
 class _TileDeck:
 
