@@ -13,28 +13,29 @@ Player vzictory Conditions
 
 """
 import numpy as np
-import itertools
-from inis_decks import inis_card_deck
-from inis_game_log import game_logger
-from inis_tiles import create_tiles
-import inis_player_agents
 import random
 
 class inis_game_state():
 
-    def __init__(self, players: dict, map_x:int=15, map_y:int=15):
+    def __init__(self, players: dict, tiles):
         self.players = players
 
         #Map
-        self.map = np.zeros((map_x, map_y),
-                            dtype=int)
         self.adjacent_tiles = {}
 
         #setup placement of pieces based off of map
-        self.capitals = np.zeros(int(map_x * map_y / 3))
-        self.sanctuaries = np.copy(self.capitals)
-        self.citadels = np.copy(self.capitals)
-        self.clans = np.zeros((len(players), map_x, map_y), dtype=int)
+        #citadel is at index 0
+        self.sanctuaries = np.zeros( (len(tiles)), dtype=int )
+        self.citadels = np.zeros((len(tiles)), dtype=int)
+        self.clans = np.zeros( (len(players), len(tiles)), dtype=int )
+        #chieftan of 0 is the Brenn
+        self.chieftans = np.copy(self.capitals)
+        """Form of clans
+                   P1 P2 P3
+        clans = [ [0, 0, 0 ],   #tile 1
+                  [0, 0, 0 ],   #tile 2
+                  [0, 0, 0 ], ]  #tile 3 etc 
+        """
 
         #Setup pieces - Simple quantity based methods for adding subtract from these starting values
         self.deeds_available = 12
@@ -50,11 +51,6 @@ class inis_game_state():
         self.player_victory_conditions = []
         self.winner = None
 
-        #MAP
-        """
-
-        """
-
     #Functionality for adding more attrs to class module after setup
     def add_attributes(self, **kwargs: dict) -> None:
         if len(kwargs) > 0:
@@ -68,78 +64,76 @@ class inis_game_state():
 
         pass
 
-    def find_adjacent_tiles(self):
+    def __find_adjacent_tiles(self):
         pass
 
-    def find_available_exploration_locations(self):
+    def __find_available_exploration_locations(self):
         pass
 
     #Placements/Interactions----------------------------------------------
-    def add_sanctuary(self, position:int) -> bool:
+    def add_sanctuary(self, position) -> bool:
         """Add sanctuary to given tile index (in tiles dict)"""
+        assert isinstance(position, np.ndarray)
+        assert np.sum(position) == 1
         if self.sanctuaries_available > 0:
-            self.sanctuaries[position] += 1
+            self.sanctuaries_available -= 1
+            self.sanctuaries = np.add(self.sanctuaries, position)
             return True
         return False
 
-    def add_citadel(self, position:int) -> bool:
+    def add_citadel(self, position) -> bool:
         """Add citadel to given tile index (in tiles dict)"""
+        assert isinstance(position, np.ndarray)
+        assert np.sum(position) == 1
         if self.citadels_available > 0:
-            self.citadels[position] += 1
+            self.citadels_available -= 1
+            self.sanctuaries = np.add(self.sanctuaries, position)
             return True
         return False
 
-    def add_clans(self, player_id: int, qt, position:int) -> bool:
-        """Add clan(s) to given tile index (in tiles dict)"""
+    def add_clans(self, player_id: int, position_qty) -> bool:
+        """Add clan(s) to given tile index (in tiles dict) Bool tells whether process worked"""
+        assert isinstance(position_qty, np.ndarray)
+        qty = np.sum(position_qty)
         if qty > self.players[player_id].clans_available:
             print("Invalid turn, not enough clans remaining")
             return False
-        if self.sanctuaries_available > 0:
-            self.sanctuaries[position] += 1
-        return
+        self.clans[player_id] = np.add(self.clans[player_id], position_qty)
+        self.deeds_available -= qty
+        return True
 
-    def take_deed(self, player_id):
-        """Give player a deed token"""
+    def take_deed(self, player_id) -> bool:
+        """Give player a deed token. Bool tells whether process worked"""
         if self.deeds_available > 0:
             self.players[player_id].deeds += 1
-        return
+            return True
+        return False
 
     # Placements/Interactions----------------------------------------------
-    def find_chieftans(self):
-        """returns player with max clans in each tile, if max has two values"""
-        for clan in self.clans:
-            pass
-        if
-            return index.max()
-        else:
-            return None
+    def __find_chieftans(self):
+        """returns player with max clans in each tile, if max has two values. Sets to 0"""
+        m, _ = np.shape(self.clans)
+        for i in range(0, m):
+            maxes = np.where(self.clans[i] == np.amax(self.clans[i]))[0]
+            if len(maxes) == 1:
+                self.chieftans[i] = maxes[0]
+            elif len(maxes) > 1 and i != 0:
+                """Brenn stays Brenn, others get changed"""
+                self.chieftans[i] = -1
+        self.brenn = self.chieftans[0]
 
-    def find_bren(self):
-        return find_cheiftan(self.capital)
+    def __assign_advantage_cards(self):
+        """Uses tile_index:advantage card pairing to deal cards to chieftans"""
+        for tile_index, chieftan_index in enumerate(self.chieftans):
+            tile = self.tiles[tile_index]
+            advantage_card = self.tile_advantage_pairs(tile)
+            self.players[chieftan_index].deal_card(advantage_card)
 
-    def assign_advantage_cards(self):
-        for player in inis.players:
-            for x in range:
-                for y in range:
-                    if chieftan == player:
-                        player.add_card()
-        return
-
-    def flip_crows_token(self):
-        """
-        Flip crows token performs a few functions
-        1) Stores - Last state of token direction - i.e [-1,1]
-        2) Finds the new player order for the turn based off of the current Bren
-
-        :returns: basically creates a player order for the turn based off of who is the Bren for
-        the current turn, must be called after the bren is found
-        """
-        #1---
+    def __flip_crows_token(self):
+        """Creates new player order"""
         self.previous_turn_direction = self.turn_direction
-
-        #2---
         a = self.players.copy()
-        K = self.bren
+        K = self.brenn
         f = random.choice([-1, 1])
         self.turn_direction = f
         if f == -1:

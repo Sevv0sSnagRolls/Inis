@@ -40,6 +40,8 @@ print m.info, m.b, m.more
 
 """
 
+import numpy as np
+
 class testclass:
 
     qty_sanctuaries = 12
@@ -66,7 +68,19 @@ class testclass:
             cls.qty_sanctuaries -= 1
         return
 
+
+def find_chieftans(clans):
+    """returns player with max clans in each tile, if max has two values"""
+    m,n = np.shape(clans)
+    chieftans = np.zeros( (m, 1) )
+    for i in range(0, m):
+        maxes = np.where(clans[i] == np.amax(clans[i]))[0]
+        if len(maxes) == 1:
+            chieftans[i] = maxes[0]
+    return chieftans
+
 if __name__ == '__main__':
+    """
     a = testclass.testcard()
     print(a.name)
     b = testclass.testcard2()
@@ -75,6 +89,9 @@ if __name__ == '__main__':
     testclass.sanctuaries()
     print(a.qty_sanctuaries)
     print(b.qty_sanctuaries)
+    """
 
-
+    clans = np.random.rand(10,3)
+    print(clans)
+    print( find_chieftans(clans) )
 
