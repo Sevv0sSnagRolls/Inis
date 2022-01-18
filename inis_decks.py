@@ -2,10 +2,6 @@
 -----------------------------------------------------
 inis_decks.py
 -----------------------------------------------------
-Module to create all cards and all decks used in inis
-Decks will be passed back to the game module
-Cards are written as classes with an action/method specific to each card
-import or card objects is done by module naming conventions
 """
 import random
 from inis_cards import create_card_objects_from_module
@@ -16,6 +12,7 @@ class inis_card_deck():
         self.name = name
         self.type = type
         self.cards = cards
+        self._shuffle_deck()
         self.discard = []
         self.deck_size = len(self.cards) + len(self.discard)
 
@@ -64,10 +61,13 @@ class inis_card_deck():
 
 
 if __name__ == "__main__":
-
     action_deck = inis_card_deck.create_action_deck(2)
-
-    print( action_deck.deal_cards(1) )
-
-    print( [card for card in action_deck.cards])
-    print(action_deck.deal_cards( 1, action_deck.cards[4] ) )
+    cards = action_deck.deal_cards(2)
+    print( [card.name for card in cards] )
+    print( [card.name for card in action_deck.cards])
+    card = action_deck.deal_cards( 1, action_deck.cards[4] )
+    print( card.name )
+    action_deck._shuffle_deck()
+    print([card.name for card in action_deck.cards])
+    for card in action_deck.cards:
+        card.display_card()

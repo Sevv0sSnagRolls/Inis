@@ -42,6 +42,7 @@ print m.info, m.b, m.more
 
 class testclass:
 
+    qty_sanctuaries = 12
 
     def __init__(self, name, style):
         self.name = name
@@ -59,10 +60,21 @@ class testclass:
     def testcard2(cls):
         return cls('jSam', 35)
 
+    @classmethod
+    def sanctuaries(cls):
+        if cls.qty_sanctuaries > 0:
+            cls.qty_sanctuaries -= 1
+        return
+
 if __name__ == '__main__':
     a = testclass.testcard()
     print(a.name)
-
+    b = testclass.testcard2()
+    print(a.qty_sanctuaries)
+    print(b.qty_sanctuaries)
+    testclass.sanctuaries()
+    print(a.qty_sanctuaries)
+    print(b.qty_sanctuaries)
 
 
 

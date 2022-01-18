@@ -19,6 +19,13 @@ class Card(ABC):
     Every function is designed to have the same set of inputs
     as each card can have a season, triskel or both
     """
+    card_width = 30
+    card_height = 12
+
+    def __init__(self):
+        self.name: str = ""
+        self.type: str = ""
+        self.blurb: str = ""
 
     @abstractmethod
     def season(self, inis_game_state, player) -> "Season action":
@@ -49,39 +56,37 @@ class Card(ABC):
         Size to the largest card somehow??
         :return:
         """
-        card_width = 30
-        card_height = 12
         self.j = 0
 
         #new line in display
         print(' ')
         # initial row
-        print("|" + card_width*"-" + "|")
-        self.print_section( self.name, card_width )
-        self.print_section( self.type, card_width )
-        print("|" + card_width * " " + "|")
-        self.print_section( self.blurb, card_width )
-        for i in range(self.j, card_height):
-            print("|" + card_width * " " + "|")
-        print("|" + card_width * "-" + "|")
+        print("|" + self.card_width*"-" + "|")
+        self.print_section( self.name )
+        self.print_section( self.type )
+        print("|" + self.card_width * " " + "|")
+        self.print_section( self.blurb )
+        for i in range(self.j, self.card_height):
+            print("|" + self.card_width * " " + "|")
+        print("|" + self.card_width * "-" + "|")
 
-    def print_section(self, text: str, card_width: int):
+    def print_section(self, text: str):
         line = ''
         n = len( text.split() )
         for i, word in enumerate( text.split()):
             sum = len(line) + 1 + len(word)
-            if (word[-1] == ":") and (sum <= card_width):
+            if (word[-1] == ":") and (sum <= self.card_width):
                 line += ' ' + word
-                self.print_row(line, (card_width - len(line)))
+                self.print_row(line, (self.card_width - len(line)))
                 line = ''
-            elif sum <= card_width:
+            elif sum <= self.card_width:
                 line += ' ' + word
             else:
-                self.print_row(line, (card_width - len(line) ) )
+                self.print_row(line, (self.card_width - len(line) ) )
                 line = '' + word
 
             if i == (n-1):
-                self.print_row(line, (card_width - sum))
+                self.print_row(line, (self.card_width - sum))
 
     def print_row(self, line: str, remainder: int):
         print("|" + line + remainder*' ' + "|")
