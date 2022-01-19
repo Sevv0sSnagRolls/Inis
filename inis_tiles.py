@@ -6,11 +6,13 @@ Module to hold tile objects for inis game
 Cards related to tiles will be handled seperately.
 Will be joined to tile objects in setup module
 """
+import numpy as np
 
 class _TileDeck:
 
     def __init__(self, tiles: list):
         self.tiles = tiles
+        self.size = len(self.tiles)
         self.undrawn = tiles
         self.drawn = []
 
@@ -46,6 +48,8 @@ class _TileTypes:
         '''
         def __init__(self, name):
             self.name = name
+            self.centre = -1*np.ones((1,1))
+            self.hex_centres = -1 * np.ones((3, 1))
 
         def tile_action(self, inis_game_state):
             return None

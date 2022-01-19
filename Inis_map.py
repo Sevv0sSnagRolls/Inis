@@ -79,6 +79,46 @@ def find_chieftans(clans):
             chieftans[i] = maxes[0]
     return chieftans
 
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
+class Map:
+
+    def __init__(self, tiles, r=1, initial_point=np.array( [0,0] ),
+                hex_grid_orientation=np.pi/2):
+
+        self.tiles = np.inf*np.ones( (len(tiles), 3, 2) )  #initialise
+        self.r = r
+        self.inital_point = initial_point
+        self.hex_grid_orientation = hex_grid_orientation
+        self.hex_frontier = self.hex_centres(self.inital_point, self.hex_grid_orientation, r, qty=3)
+        #np.array( [hex_x, hex_y], [hex_x2, ...], ....)
+
+    def explore_hex_frontier(self):
+        for tile in self.hex_frontier:
+            adj_exp_pos = self.hex_centres(tile, self.hex_grid_orientation, self.r, 6)
+            if adj_exp_pos
+
+        adj_exp_pos = [self.hex_centres(tile, self.hex_grid_orientation, self.r, 6)
+                        for tile in self.hex_frontier]
+        for adj_tile in adj_exp_pos:
+            if adj_tile not in self.tiles
+
+    @staticmethod
+    def hex_centres(hex_centre, hex_grid_orientation, r:float, qty=6):
+        """Eavluates hexes around a point based off start rotation etc"""
+        return np.add( np.array( [ [ r*np.cos(i*2*np.pi/qty + hex_grid_orientation),
+                                     r*np.cos(i*2*np.pi/qty + hex_grid_orientation) ]
+                                     for i in range(0, qty) ] ), hex_centre )
+
+
+    def render(self):
+
+        fig, ax = plt.subplots()
+        ax.add_patch
+
+
+
 if __name__ == '__main__':
     """
     a = testclass.testcard()
@@ -95,3 +135,4 @@ if __name__ == '__main__':
     print(clans)
     print( find_chieftans(clans) )
 
+    tiles = [1,2,3,4,5,6]

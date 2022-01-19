@@ -15,21 +15,21 @@ Player vzictory Conditions
 import numpy as np
 import random
 
-class inis_game_state():
+class InisGameState:
 
-    def __init__(self, players: dict, tiles):
+    def __init__(self, players: dict, tile_deck: object):
         self.players = players
 
         #Map
+        self.tiles = tile_deck
+        self.map_size = self.tiles.size
         self.adjacent_tiles = {}
 
-        #setup placement of pieces based off of map
-        #citadel is at index 0
-        self.sanctuaries = np.zeros( (len(tiles)), dtype=int )
-        self.citadels = np.zeros((len(tiles)), dtype=int)
-        self.clans = np.zeros( (len(players), len(tiles)), dtype=int )
-        #chieftan of 0 is the Brenn
-        self.chieftans = np.copy(self.capitals)
+        #Components
+        self.sanctuaries = np.zeros( (len(self.map_size)), dtype=int )
+        self.citadels = np.zeros((len(self.map_size)), dtype=int )
+        self.clans = np.zeros( (len(players), len(self.map_size)), dtype=int )
+        self.chieftans = np.copy(self.map_size) #chieftan of 0 is the Brenn
         """Form of clans
                    P1 P2 P3
         clans = [ [0, 0, 0 ],   #tile 1
@@ -125,9 +125,10 @@ class inis_game_state():
     def __assign_advantage_cards(self):
         """Uses tile_index:advantage card pairing to deal cards to chieftans"""
         for tile_index, chieftan_index in enumerate(self.chieftans):
-            tile = self.tiles[tile_index]
-            advantage_card = self.tile_advantage_pairs(tile)
-            self.players[chieftan_index].deal_card(advantage_card)
+            if chieftan_index >= 0: #check for actual existance [-1 is noone is cheiftan]
+                tile = self.tiles[tile_index]
+                advantage_card = self.tile_advantage_pairs(tile)
+                self.players[chieftan_index].deal_card(advantage_card)
 
     def __flip_crows_token(self):
         """Creates new player order"""
@@ -186,7 +187,7 @@ class inis_game_state():
         All relies on sparse tiles array being large enough and
         placements allowable functions not allocating clans to tiles that don't exist
         '''
-        explored = [i for i, _ in enumerate(clans[player_id]) if e > 0]
+        explored = [i for i, e in enumerate(self.clans[:, player_id]) if e > 0]
         victory = True if explored >= 6 else False
         return victory, len(explored), explored
 
@@ -354,6 +355,7 @@ class victory_conditions():
         self.victory = victory_bool
         self.qty = qty
         self.positions = positions
+
 
 
 if __name__=="__main__":
