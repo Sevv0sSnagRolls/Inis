@@ -158,55 +158,32 @@ class InisGameState:
         return winner
 
     def check_victory_conditions(self, player_id: int):
-        """
-        Updates for all players in a data object which everyone can view (as it's not hidden information)
-        Will do this at the start of every round
-        """
+        """"""
         for player in self.players:
             pass
 
     def find_victory_conditions(self, player_id: int):
-        '''
-        Reason its kept in game class is because every player wants to know
-        every other players victory conditions at every stage of the game
-        and also their 'distance' to victory
-        Find_victory_conditions will add the deed tokens seperately
-        Will also display to terminal text of how player wins
-        :return:
-        '''
+        """"""
         self.victory_exploration(player_id)
         self.victory_cheiftan(player_id)
         self.victory_sanctuaries(player_id)
         return
 
     def victory_exploration(self, player_id: int):
-        '''
-        Checks the exploration victory condition
-        Gives how many have been explored and which ones
-        Returns [False/True, Qty Explored, TilesExplored]
-        All relies on sparse tiles array being large enough and
-        placements allowable functions not allocating clans to tiles that don't exist
-        '''
+        """Needs to be in 6 different territories"""
         explored = [i for i, e in enumerate(self.clans[:, player_id]) if e > 0]
         victory = True if explored >= 6 else False
         return victory, len(explored), explored
 
     def victory_sanctuaries(self, player_id: int):
-        '''
-        Checks player position against each sanctuary
-        Uses a bit of array maths to make things ez
-        '''
+        """Needs to be in territories with 6 Sacntuaries total"""
         sanctuaries = np.multiply(clans[player] / clans[player_id], self.sanctuaires)
         qty_sanctuaries = np.sum(sanctuaries)
         victory = True if qty_sanctuaries >= 6 else False
         return victory, qty_sanctuaries, sanctuaries
 
     def victory_cheiftan(self, player_id: int):
-        '''
-        Needs to be chieftan over atleast 6 other clans
-        Use array maths in the clans object
-        returns T/F, qty, which tiles they are in and how many from each
-        '''
+        """Needs to be chieftan over atleast 6 other clans"""
         clans_ruled_over = np.zeros((len(self.tiles), 1), dtype=int)
         for i, e in enumerate(clans_ruled_over):
             if np.argmax(clans[:, i]) == clans[player_id][i]:
