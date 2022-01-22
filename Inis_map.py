@@ -124,49 +124,65 @@ import numpy as np
 
 
 class Map:
+    """
+    Map Class is a way I developed of representing hexagonal
+    tessilication in a rectangular matrix
+    vertically aligned hexes can be imagined in rows
+    as being normal, offset, normal:
+    0 0 0 0 0 0
+     0 0 0 0 0 0
+    0 0 0 0 0 0
+    etc...
+    Each of this elements in the rect matrix represents one hex section of the tiles
+    tiles are comprised of three hex sections
+    relationship between the tiles (what's adjacent to what) is described in
+    the class variables below
 
-    map_buffer_extender = 2 #common between all classes
+    To make sure the map can grow, methods will check current tile proxity to
+    map (rect array) edge and add a buffer based on the distance
+
+    Possible patterns to add to the grid are 4 different styles of a 2x2 matrix
+    These permutations will be checked for exploration methods
+    """
+    #common between all classes,
+    #buffer extender must be two rows to allow specific laying of tiles
+    map_buffer_extender = 2
     hex = np.array([[1, 1], [1, 0]])
     hex_patterns = [np.rot90(hex, k) for k in range(0, 4)]
 
-    def __init__(self, x:int=3, r=1):
+    # Pattern of connections to other indicies 1 - odd rows
+    # \ |
+    # --i--
+    # / |
+    # [i-1][j-1], [i-1][j]
+    # [i][j-1],   [i][j+1]
+    # [i+1][j-1], [i+1][j]
+    self.pattern_1 = np.array([[-1, 0], [-1, 1],
+                               [0, -1], [0, 1],
+                               [1, 0], [1, 1]], dtype=int)
 
+    # Pattern of connections to other indicies 2 - even rows
+    #   | /
+    # --i--
+    #   | \
+    # [i-1][j], [i-1][j+1]
+    # [i][j-1], [i][j+1]
+    # [i+1][j], [i+1][j+1]
+    self.pattern_2 = np.array([[-1, 0], [-1, 1],
+                               [0, -1], [0, 1],
+                               [1, 0], [1, 1]], dtype=int)
+
+    def __init__(self, inital_tiles:dict, x:int=5, r=1):
         self.x = x
         self.y = x
         self.maprep = -1*np.ones((self.x,self.y),dtype=int)
         self.r = r
-
-        #Pattern of connections to other indicies 1 - odd rows
-        # \ |
-        # --i--
-        # / |
-        #[i-1][j-1], [i-1][j]
-        #[i][j-1],   [i][j+1]
-        #[i+1][j-1], [i+1][j]
-        self.pattern_1 = np.array([[-1, 0],
-                              [-1, 1],
-                              [0, -1],
-                              [0, 1],
-                              [1, 0],
-                              [1, 1]], dtype=int)
-
-        # Pattern of connections to other indicies 2 - even rows
-        #   | /
-        # --i--
-        #   | \
-        # [i-1][j], [i-1][j+1]
-        # [i][j-1], [i][j+1]
-        # [i+1][j], [i+1][j+1]
-        self.pattern_2 = np.array([ [-1, 0],
-                               [-1, 1],
-                               [0, -1],
-                               [0, 1],
-                               [1, 0],
-                               [1, 1] ], dtype=int )
-
-        initial_tile =
+        #Map will store the dict of index : tile object
+        #this allows colours etc to be grabbed later
+        self.tile = inital_tiles
 
     def player_add_tile(self):
+        """public method for game to call for exploration card"""
         options = self.__generate_placement_options()
         selected_position = self.__prompt_player_selection(player, options)
         self.__add_tile_to_instance(selected_position, tile)
@@ -186,16 +202,16 @@ class Map:
             i += 1
         return selected_tile_location
 
-    def initial_map_layout(self, TileDeck):
+    def __initial_map_layout(self, TileDeck):
 
 
-    def generate_tile_placement_options(self):
+    def __generate_tile_placement_options(self):
         """Generates all permutations of positions new tile can go"""
         for loc in self._valid_adj_tile_locations():
 
 
 
-    def _valid_adj_tile_locations(self):
+    def __valid_adj_tile_locations(self):
         """Finds Adj tile locations adj to atleast two existing tiles"""
         valid_locations = []
         existing = np.transpose(np.nonzero(self.maprep > 0))
@@ -215,20 +231,21 @@ class Map:
                     #     self.frontier.append(adj)
         return valid_locations
 
-    def find_adj(self, mapArray, existing):
+    def __find_adj(self, mapArray, existing):
         """Finds points adjacent in map array for each element in existing array"""
         m, _ = np.shape(existing)
         #3d array, one set of 6 adj 2D points for each existing point
-        adjs = np.add(np.ones((m,6 2), dtype=int), existing)
-        adjs = np.add(self.patterns(location[0]), location)
-
+        adjs = np.reshape(np.add(np.ones((m,6 2), dtype=int), existing), (m*6, 2))
+        print(adjs)
+        
+        #-----I'm here atm | | | | |
 
     @staticmethod
     def array_distances(array, point):
         """Finds distance between array and a point"""
         return np.linalg.norm(np.subtract(array, point), axis=1)
 
-    def check_map_size(self):
+    def __check_map_size(self):
         """checks and increases size as map gets explored to the edges"""
         buffer_check = np.sum(self.maprep[:,0])  + \
                        np.sum(self.maprep[:,-1]) + \
@@ -237,7 +254,7 @@ class Map:
         if buffer_check > 0:
             self.extend_map()
 
-    def extend_map(self):
+    def __extend_map(self):
         """add a column and a row buffer around the entire map"""
         self.x += map_rep.extender
         self.y += extender
@@ -245,7 +262,7 @@ class Map:
         newmap[1:-1,1:-1] = self.maprep.copy()
         self.maprep = new_map
 
-    def patterns(self, row_index):
+    def __patterns(self, row_index):
         """way of converting vertical hex grids into matrcies"""
         if row_index % 2 == 1:
             return self.pattern_1
