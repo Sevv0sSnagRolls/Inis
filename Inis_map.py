@@ -1,6 +1,15 @@
+"""
+inis_map.py
+
+this was painful
+"""
+
 import random
 import numpy as np
-
+import itertools
+import matplotlib.pyplot as plt
+from matplotlib.patches import Circle, RegularPolygon
+from matplotlib.collections import PatchCollection
 
 # #actually stupid, maybe matrix rep was better....
 # class Map:
@@ -144,11 +153,9 @@ class Map:
     Possible patterns to add to the grid are 4 different styles of a 2x2 matrix
     These permutations will be checked for exploration methods
     """
-    #common between all classes,
-    #buffer extender must be two rows to allow specific laying of tiles
+    # common between all classes,
+    # buffer extender must be two rows to allow specific laying of tiles
     map_buffer_extender = 2
-    hex = np.array([[1, 1], [1, 0]])
-    hex_patterns = [np.rot90(hex, k) for k in range(0, 4)]
 
     # Pattern of connections to other indicies 1 - odd rows
     # \ |
@@ -157,9 +164,9 @@ class Map:
     # [i-1][j-1], [i-1][j]
     # [i][j-1],   [i][j+1]
     # [i+1][j-1], [i+1][j]
-    self.pattern_1 = np.array([[-1, 0], [-1, 1],
-                               [0, -1], [0, 1],
-                               [1, 0], [1, 1]], dtype=int)
+    pattern_1 = np.array([[-1, 0], [-1, 1],
+                          [0, -1], [0, 1],
+                          [1, 0], [1, 1]], dtype=int)
 
     # Pattern of connections to other indicies 2 - even rows
     #   | /
@@ -168,22 +175,37 @@ class Map:
     # [i-1][j], [i-1][j+1]
     # [i][j-1], [i][j+1]
     # [i+1][j], [i+1][j+1]
-    self.pattern_2 = np.array([[-1, 0], [-1, 1],
-                               [0, -1], [0, 1],
-                               [1, 0], [1, 1]], dtype=int)
+    pattern_2 = np.array([[-1, 0], [-1, 1],
+                          [0, -1], [0, 1],
+                          [1, 0], [1, 1]], dtype=int)
 
-    def __init__(self, inital_tiles:dict, x:int=5, r=1):
+    def __init__(self, initial_tiles:dict, x:int=6, r=1):
+        # player_qty ->
+        # initial_tiles -> the selected inital tiles
         self.x = x
         self.y = x
-        self.maprep = -1*np.ones((self.x,self.y),dtype=int)
+        print(x)
+        self.maprep = -1*np.ones((self.x, self.y), dtype=int)
         self.r = r
-        #Map will store the dict of index : tile object
-        #this allows colours etc to be grabbed later
-        self.tile = inital_tiles
+        # Map will store the dict of index : tile object
+        # this allows colours etc to be grabbed later
+        self.tiles = initial_tiles
+        # Player qty is just the number of players in the game
+        self.player_qty = len(initial_tiles)
+        # tile count is a stored pointer that will update i++ for every
+        # tile added for tile dict
+        self.tile_count = 0
 
-    def player_add_tile(self):
+        # Creates the 4 ways tile objects can be placed
+        self.hex_patterns = self.hex_patterns()
+
+        # run the initial setup function
+        self.__initial_map_layout()
+
+    def player_add_tile(self, player, tile):
         """public method for game to call for exploration card"""
-        options = self.__generate_placement_options()
+        self.__check_map_size()
+        options = self.__generate_tile_placement_options()
         selected_position = self.__prompt_player_selection(player, options)
         self.__add_tile_to_instance(selected_position, tile)
 
@@ -202,43 +224,77 @@ class Map:
             i += 1
         return selected_tile_location
 
-    def __initial_map_layout(self, TileDeck):
+    def __add_tile_to_instance(self, selected_position, tile):
+        """Finally, adds the selection to the object"""
 
+
+    def __initial_map_layout(self):
+        """Place the qty of initial tiles"""
+        # start_pos = self.x
+        # self.maprep[int(x/2), int(y/2)] = random.choice(Map.hex_patterns)
+        # To fix later, for now just use a specific start grid with known indexes min of 2 player
+        # need to check this fits in with row offset patterns
+        self.maprep[2:4, 2:5] = np.array( [ [0, 0, 1],
+                                            [0, 1, 1]])
+        self.tile_count = 2
+        print(self.maprep)
+        for i in range(2, self.player_qty):
+            self.maprep = random.choice( self.__generate_tile_placement_options() )
+            self.tile_count += 1
+        self.render_matplotlib()
 
     def __generate_tile_placement_options(self):
         """Generates all permutations of positions new tile can go"""
-        for loc in self._valid_adj_tile_locations():
+        options = []
+        self.__existing_tile_locations()
+        for loc in self.__find_valid_adj_tile_locations():
+            options += self.__find_tile_placement_option(loc)
+            print(options)
+        return options
 
+    def __existing_tile_locations(self):
+        """Find 0 or greater (tile indicies in the map"""
+        self.existing = np.transpose(np.nonzero(self.maprep >= 0))
 
+    def __find_adj_tile_locations(self, array):
+        """Finds points adjacent to each element on the map via indicies in the given array"""
+        m, _ = np.shape(array)
+        # 3d array, one set of 6 adj 2D points for each existing point
+        adjs = np.array( [np.add(self.__patterns(element[0]), element) for element in array ] )
+        adjs = np.reshape(adjs, (m*6, 2))
+        return adjs
 
-    def __valid_adj_tile_locations(self):
-        """Finds Adj tile locations adj to atleast two existing tiles"""
+    def __find_valid_adj_tile_locations(self):
+        """Test which adjacent tiles are adcacent to two different tiles"""
         valid_locations = []
-        existing = np.transpose(np.nonzero(self.maprep > 0))
-        for location in np.transpose(np.nonzero(self.maprep > 0)):
-            adjs = np.add(self.patterns(location[0]), location)
-
-            for adj in adjs:
-                distances = self.array_distances(existing, adj)
-                #check if it's already in the existing points
-                if np.size(np.where(distances == 0)):
-                    #check if its adjacent to atleast two existing points
-                    if np.size( np.where( distances == self.r )) == 2:
-                        valid_locations.append(adj)
-                    # else:
-                    #     #if hex is not adj to two, but is next to existing etc,
-                    # way too hard fuck this
-                    #     self.frontier.append(adj)
+        for adj in self.__find_adj_tile_locations(self.existing):
+            distance = self.array_distances(self.existing, adj)
+            if np.size(np.where(distance == 0)) == 0:
+                # check if its adjacent to atleast two existing points
+                if np.size(np.where( np.abs(distance - 1) == 0)) >= 2:
+                    print('y2')
+                    valid_locations.append(adj)
+                    print(adj)
+                    print(distance)
+                    print(valid_locations)
         return valid_locations
 
-    def __find_adj(self, mapArray, existing):
-        """Finds points adjacent in map array for each element in existing array"""
-        m, _ = np.shape(existing)
-        #3d array, one set of 6 adj 2D points for each existing point
-        adjs = np.reshape(np.add(np.ones((m,6 2), dtype=int), existing), (m*6, 2))
-        print(adjs)
-        
-        #-----I'm here atm | | | | |
+    def __find_tile_placement_option(self, loc):
+        """Finds the permutations of placement options available to the tile"""
+        possible_placements = []
+        for pair in itertools.combinations(self.__find_adj_tile_locations(loc), 2):
+            pair_valid = True
+            for element in pair:
+                distance = self.array_distances(self.existing, element)
+                if np.size(np.where(distance == 0)):
+                    pair_valid = False
+            if pair_valid:
+                placement = self.maprep.copy()
+                placement[loc[0], loc[1]] = self.tile_count
+                placement[pair[0][0], pair[0][1]] = self.tile_count
+                placement[pair[1][0], pair[1][1]] = self.tile_count
+                possible_placements.append(placement)
+        return possible_placements
 
     @staticmethod
     def array_distances(array, point):
@@ -247,20 +303,20 @@ class Map:
 
     def __check_map_size(self):
         """checks and increases size as map gets explored to the edges"""
-        buffer_check = np.sum(self.maprep[:,0])  + \
-                       np.sum(self.maprep[:,-1]) + \
-                       np.sum(self.maprep[0,:])  + \
-                       np.sum(self.maprep[-1,:])
+        buffer_check = np.sum(self.maprep[:, 0]) + \
+                       np.sum(self.maprep[:, -1]) + \
+                       np.sum(self.maprep[0, :]) + \
+                       np.sum(self.maprep[-1, :])
         if buffer_check > 0:
-            self.extend_map()
+            self.__extend_map()
 
     def __extend_map(self):
         """add a column and a row buffer around the entire map"""
-        self.x += map_rep.extender
-        self.y += extender
-        new_map = -1*np.ones((self.x, self.y), dtype=int)
-        newmap[1:-1,1:-1] = self.maprep.copy()
-        self.maprep = new_map
+        self.x += Map.map_buffer_extender
+        self.y += Map.map_buffer_extender
+        newMap = -1*np.ones((self.x, self.y), dtype=int)
+        newMap[1:-1,1:-1] = self.maprep.copy()
+        self.maprep = newMap.copy()
 
     def __patterns(self, row_index):
         """way of converting vertical hex grids into matrcies"""
@@ -268,23 +324,30 @@ class Map:
             return self.pattern_1
         return self.pattern_2
 
+    @staticmethod
+    def hex_patterns():
+        hex = np.array([[1, 1], [1, 0]])
+        hex_patterns = [np.rot90(hex, k) for k in range(0, 4)]
+        return hex_patterns
+
+    def render_matplotlib(self):
+        """Renders as plotted which is a vertical hex grid"""
+        fig, ax = plt.subplots()
+        patches = []
+        m, n = np.shape(self.maprep)
+        for i in range(0, m):
+            for j in range(0, n):
+                tile_index = self.maprep[i][j]
+                if tile_index >= 0:
+                    x = ((2*j) + i%2) * self.r*np.cos(2*np.pi/6*1/2)
+                    y = i*(self.r + self.r*np.sin(2*np.pi/6*1/2))
+                    colour = self.tiles[ str(tile_index) ][1]
+                    patches.append(RegularPolygon((x, y), 6, self.r, facecolor=colour))
+        collection = PatchCollection(patches, match_original=True)
+        ax.add_collection(collection)
+        plt.autoscale()
+        plt.show()
 
 if __name__ == '__main__':
-    """
-    a = testclass.testcard()
-    print(a.name)
-    b = testclass.testcard2()
-    print(a.qty_sanctuaries)
-    print(b.qty_sanctuaries)
-    testclass.sanctuaries()
-    print(a.qty_sanctuaries)
-    print(b.qty_sanctuaries)
-    """
-
-    #clans = np.random.rand(10,3)
-    #print(clans)
-    #print( find_chieftans(clans) )
-
-    tiles = [1,2,3,4,5,6]
-    l = len(tiles)
-    test = Map(l, tiles)
+    tiles = {'0':[5, 'lime'], '1':[6,'darkorange'], '2':[6,'chocolate'], '3':[6,'blue']}
+    test = Map(tiles)
