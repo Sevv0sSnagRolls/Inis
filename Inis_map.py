@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Circle, RegularPolygon
 from matplotlib.collections import PatchCollection
 
+
 # #actually stupid, maybe matrix rep was better....
 # class Map:
 #     """
@@ -155,7 +156,7 @@ class Map:
     """
     # common between all classes,
     # buffer extender must be two rows to allow specific laying of tiles
-    map_buffer_extender = 2
+    map_buffer_extender = 3
 
     # Pattern of connections to other indicies 1 - odd rows
     # \ |
@@ -179,13 +180,13 @@ class Map:
                           [0, -1], [0, 1],
                           [1, 0], [1, 1]], dtype=int)
 
-    def __init__(self, initial_tiles:dict, x:int=6, r=1):
+    def __init__(self, initial_tiles: dict, x: int = 12, r=1):
         # player_qty ->
         # initial_tiles -> the selected inital tiles
         self.x = x
         self.y = x
         print(x)
-        self.maprep = -1*np.ones((self.x, self.y), dtype=int)
+        self.maprep = -1 * np.ones((self.x, self.y), dtype=int)
         self.r = r
         # Map will store the dict of index : tile object
         # this allows colours etc to be grabbed later
@@ -198,6 +199,7 @@ class Map:
 
         # Creates the 4 ways tile objects can be placed
         self.hex_patterns = self.hex_patterns()
+        self.hex_inidices = np.array([[0,0],[0,1],[1,0],[1,1]],dtype=int)
 
         # run the initial setup function
         self.__initial_map_layout()
@@ -213,7 +215,7 @@ class Map:
         """Handles player selection and validation. Player class need method select tile..."""
         i = 0
         selection_valid = False
-        selected_tile_location = np.empty((2,1))
+        selected_tile_location = np.empty((2, 1))
         while not selection_valid or i <= 10:
             selected_tile_location = player.select_tile(options)
             if selected_tile_location in options:
@@ -227,19 +229,22 @@ class Map:
     def __add_tile_to_instance(self, selected_position, tile):
         """Finally, adds the selection to the object"""
 
-
     def __initial_map_layout(self):
         """Place the qty of initial tiles"""
         # start_pos = self.x
         # self.maprep[int(x/2), int(y/2)] = random.choice(Map.hex_patterns)
         # To fix later, for now just use a specific start grid with known indexes min of 2 player
         # need to check this fits in with row offset patterns
-        self.maprep[2:4, 2:5] = np.array( [ [0, 0, 1],
-                                            [0, 1, 1]])
+        a = Map.map_buffer_extender
+        start_array = np.array([[0, 0, 1],
+                                [0, 1, 1]])
+        m = np.shape(start_array)
+        self.maprep[a:a + m[0], a:a + m[1]] = start_array
         self.tile_count = 2
         print(self.maprep)
         for i in range(2, self.player_qty):
-            self.maprep = random.choice( self.__generate_tile_placement_options() )
+            self.maprep = random.choice(self.__generate_tile_placement_options())
+            print(self.maprep)
             self.tile_count += 1
         self.render_matplotlib()
 
@@ -249,7 +254,6 @@ class Map:
         self.__existing_tile_locations()
         for loc in self.__find_valid_adj_tile_locations():
             options += self.__find_tile_placement_option(loc)
-            print(options)
         return options
 
     def __existing_tile_locations(self):
@@ -258,10 +262,10 @@ class Map:
 
     def __find_adj_tile_locations(self, array):
         """Finds points adjacent to each element on the map via indicies in the given array"""
-        m, _ = np.shape(array)
+        m = np.shape(array)[0]
         # 3d array, one set of 6 adj 2D points for each existing point
-        adjs = np.array( [np.add(self.__patterns(element[0]), element) for element in array ] )
-        adjs = np.reshape(adjs, (m*6, 2))
+        adjs = np.array([np.add(self.__patterns(element[0]), element) for element in array])
+        adjs = np.reshape(adjs, (m * 6, 2))
         return adjs
 
     def __find_valid_adj_tile_locations(self):
@@ -271,29 +275,57 @@ class Map:
             distance = self.array_distances(self.existing, adj)
             if np.size(np.where(distance == 0)) == 0:
                 # check if its adjacent to atleast two existing points
-                if np.size(np.where( np.abs(distance - 1) == 0)) >= 2:
-                    print('y2')
+                adjacents = self.__find_adj_tile_locations([adj])
+                count = 0
+                for e in self.existing:
+                    if e in adjacents:
+                        count += 1
+                if count >= 2:
                     valid_locations.append(adj)
-                    print(adj)
-                    print(distance)
-                    print(valid_locations)
         return valid_locations
 
     def __find_tile_placement_option(self, loc):
         """Finds the permutations of placement options available to the tile"""
         possible_placements = []
-        for pair in itertools.combinations(self.__find_adj_tile_locations(loc), 2):
-            pair_valid = True
-            for element in pair:
-                distance = self.array_distances(self.existing, element)
-                if np.size(np.where(distance == 0)):
-                    pair_valid = False
-            if pair_valid:
-                placement = self.maprep.copy()
-                placement[loc[0], loc[1]] = self.tile_count
-                placement[pair[0][0], pair[0][1]] = self.tile_count
-                placement[pair[1][0], pair[1][1]] = self.tile_count
-                possible_placements.append(placement)
+        adjs = self.__find_adj_tile_locations([loc])
+        available =
+        # for i in range(0, 1):
+        #     for j in range(0, 1):
+        #         sp = np.subtract(loc, [-1 * i, -1 * j])
+        #         for pattern in self.hex_patterns:
+        #             tile = []
+        #             tile_lay = np.add(np.multiply(self.hex_inidices, tile), sp)
+        #             print(tile_lay)
+        #             count = 0
+        #             for hex in tile_lay:
+        #                 if (len(np.where(np.linalg.norm(np.subtract(adjs, hex), axis=1) == 0)[0]) > 0) \
+        #                         and \
+        #                         (len(np.where(np.linalg.norm(np.subtract(self.existing, hex), axis=1) == 0)[0]) > 0):
+        #                     count += 1
+        #             if count == 3:
+        #                 placement = self.maprep.copy()
+        #                 placement[sp[0]:sp[0] + 1, sp[1]:sp[1] + 1] = tile_lay
+        #                 possible_placements.append(placement)
+        #
+
+
+        # print(adjs)
+        # for pair in itertools.combinations(adjs, 2):
+        #     if np.linalg.norm(np.subtract(pair[0], pair[1])) == 1:
+        #         print(pair)
+        #         pair_valid = True
+        #         for element in pair:
+        #             distance = self.array_distances(self.existing, element)
+        #             if np.size(np.where(distance == 0)):
+        #                 pair_valid = False
+        #         if pair_valid:
+        #             print(pair)
+        #             placement = self.maprep.copy()
+        #             placement[loc[0]][loc[1]] = self.tile_count
+        #             placement[pair[0][0]][pair[0][1]] = self.tile_count
+        #             placement[pair[1][0]][pair[1][1]] = self.tile_count
+        #             possible_placements.append(placement)
+
         return possible_placements
 
     @staticmethod
@@ -314,8 +346,8 @@ class Map:
         """add a column and a row buffer around the entire map"""
         self.x += Map.map_buffer_extender
         self.y += Map.map_buffer_extender
-        newMap = -1*np.ones((self.x, self.y), dtype=int)
-        newMap[1:-1,1:-1] = self.maprep.copy()
+        newMap = -1 * np.ones((self.x, self.y), dtype=int)
+        newMap[1:-1, 1:-1] = self.maprep.copy()
         self.maprep = newMap.copy()
 
     def __patterns(self, row_index):
@@ -339,15 +371,23 @@ class Map:
             for j in range(0, n):
                 tile_index = self.maprep[i][j]
                 if tile_index >= 0:
-                    x = ((2*j) + i%2) * self.r*np.cos(2*np.pi/6*1/2)
-                    y = i*(self.r + self.r*np.sin(2*np.pi/6*1/2))
-                    colour = self.tiles[ str(tile_index) ][1]
+                    # sart from top left as (0,0)
+                    x = ((2 * j) - (i % 2)) * self.r * np.cos(2 * np.pi / 6 * 1 / 2)
+                    y = -1 * i * (self.r + self.r * np.sin(2 * np.pi / 6 * 1 / 2))
+                    colour = self.tiles[str(tile_index)][1]
                     patches.append(RegularPolygon((x, y), 6, self.r, facecolor=colour))
         collection = PatchCollection(patches, match_original=True)
         ax.add_collection(collection)
         plt.autoscale()
         plt.show()
 
+    # def update_map_dict(self):
+    #     dict_values = {}
+    #     for i in range(0, self.x):
+    #         for j in range(0, self.x):
+    #             dict_values.update({(str(i) + str(j)) : np.add(self.__patterns(i), self.map[i][j])})
+
+
 if __name__ == '__main__':
-    tiles = {'0':[5, 'lime'], '1':[6,'darkorange'], '2':[6,'chocolate'], '3':[6,'blue']}
+    tiles = {'0': [5, 'lime'], '1': [6, 'darkorange'], '2': [6, 'chocolate'], '3': [6, 'blue']}
     test = Map(tiles)
