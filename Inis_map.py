@@ -288,7 +288,9 @@ class Map:
         """Finds the permutations of placement options available to the tile"""
         possible_placements = []
         adjs = self.__find_adj_tile_locations([loc])
-        available =
+        m = np.shape(self.maprep)
+        available = [[i,j] for i in range(0, m[0]) for j in range(0, m[1]) if (self.existing == np.array([i,j])).all(axis=1).any() and (adjs == np.array([i,j])).all(axis=1).any() ]
+        print(available)
         # for i in range(0, 1):
         #     for j in range(0, 1):
         #         sp = np.subtract(loc, [-1 * i, -1 * j])
