@@ -169,6 +169,10 @@ class Map:
                           [0, -1], [0, 1],
                           [1, 0], [1, 1]], dtype=int)
 
+    pattern_3 = np.array([[1, 1, 0],
+                          [1, 1, 1],
+                          [1, 1, 0]], dtype=int)
+
     # Pattern of connections to other indicies 2 - even rows
     #   | /
     # --i--
@@ -180,12 +184,15 @@ class Map:
                           [0, -1], [0, 1],
                           [1, 0], [1, 1]], dtype=int)
 
+    pattern_3 = np.array([ [0, 1, 1],
+                           [1, 1, 1],
+                           [0, 1, 1]], dtype=int )
+
     def __init__(self, initial_tiles: dict, x: int = 12, r=1):
         # player_qty ->
         # initial_tiles -> the selected inital tiles
         self.x = x
         self.y = x
-        print(x)
         self.maprep = -1 * np.ones((self.x, self.y), dtype=int)
         self.r = r
         # Map will store the dict of index : tile object
@@ -199,7 +206,7 @@ class Map:
 
         # Creates the 4 ways tile objects can be placed
         self.hex_patterns = self.hex_patterns()
-        self.hex_inidices = np.array([[0,0],[0,1],[1,0],[1,1]],dtype=int)
+        self.hex_inidices = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=int)
 
         # run the initial setup function
         self.__initial_map_layout()
@@ -239,58 +246,87 @@ class Map:
         start_array = np.array([[0, 0, 1],
                                 [0, 1, 1]])
         m = np.shape(start_array)
-        self.maprep[a:a + m[0], a:a + m[1]] = start_array
+        self.maprep[ int(self.x/2)-3:int(self.x/2)-3 + m[0], int(self.y/2)-1:int(self.y/2)-1 + m[1]] = start_array
         self.tile_count = 2
         print(self.maprep)
         for i in range(2, self.player_qty):
-            self.maprep = random.choice(self.__generate_tile_placement_options())
+            self.maprep = random.choice(self.__find_tile_placement_option())
             print(self.maprep)
             self.tile_count += 1
         self.render_matplotlib()
 
-    def __generate_tile_placement_options(self):
-        """Generates all permutations of positions new tile can go"""
-        options = []
-        self.__existing_tile_locations()
-        for loc in self.__find_valid_adj_tile_locations():
-            options += self.__find_tile_placement_option(loc)
-        return options
-
+    # def __generate_tile_placement_options(self):
+    #     """Generates all permutations of positions new tile can go"""
+    #     options = []
+    #     self.__existing_tile_locations()
+    #     options += self.__find_tile_placement_options(loc)
+    #     for loc in self.__find_valid_adj_tile_locations():
+    #         options += self.__find_tile_placement_options(loc)
+    #     return options
+    #
     def __existing_tile_locations(self):
         """Find 0 or greater (tile indicies in the map"""
         self.existing = np.transpose(np.nonzero(self.maprep >= 0))
 
+    #
     def __find_adj_tile_locations(self, array):
         """Finds points adjacent to each element on the map via indicies in the given array"""
         m = np.shape(array)[0]
-        # 3d array, one set of 6 adj 2D points for each existing point
         adjs = np.array([np.add(self.__patterns(element[0]), element) for element in array])
-        adjs = np.reshape(adjs, (m * 6, 2))
+        adjs = np.unique( np.reshape(adjs, (m * 6, 2)), axis=1 )
         return adjs
 
-    def __find_valid_adj_tile_locations(self):
-        """Test which adjacent tiles are adcacent to two different tiles"""
-        valid_locations = []
-        for adj in self.__find_adj_tile_locations(self.existing):
-            distance = self.array_distances(self.existing, adj)
-            if np.size(np.where(distance == 0)) == 0:
-                # check if its adjacent to atleast two existing points
-                adjacents = self.__find_adj_tile_locations([adj])
-                count = 0
-                for e in self.existing:
-                    if e in adjacents:
-                        count += 1
-                if count >= 2:
-                    valid_locations.append(adj)
-        return valid_locations
+    # def __find_valid_adj_tile_locations(self):
+    #     """Test which adjacent tiles are adcacent to two different tiles"""
+    #     valid_locations = []
+    #     for adj in self.__find_adj_tile_locations(self.existing):
+    #         distance = self.array_distances(self.existing, adj)
+    #         if np.size(np.where(distance == 0)) == 0:
+    #             # check if its adjacent to atleast two existing points
+    #             adjacents = self.__find_adj_tile_locations([adj])
+    #             count = 0
+    #             for e in self.existing:
+    #                 if e in adjacents:
+    #                     count += 1
+    #             if count >= 2:
+    #                 valid_locations.append(adj)
+    #     return valid_locations
 
-    def __find_tile_placement_option(self, loc):
+    def __find_tile_placement_option(self):
         """Finds the permutations of placement options available to the tile"""
-        possible_placements = []
-        adjs = self.__find_adj_tile_locations([loc])
+        self.__existing_tile_locations()
+        adjs = self.__find_adj_tile_locations(self.existing)
         m = np.shape(self.maprep)
-        available = [[i,j] for i in range(0, m[0]) for j in range(0, m[1]) if (self.existing == np.array([i,j])).all(axis=1).any() and (adjs == np.array([i,j])).all(axis=1).any() ]
+        available = [[i, j] for i in range(0, m[0]) for j in range(0, m[1]) if
+                     ((self.existing == np.array([i, j])).all(axis=1).any() is False)
+                     and (adjs == np.array([i, j])).all(axis=1).any()]
         print(available)
+
+        print(adjs)
+
+
+        possible_placements = []
+        for i in range(1, m[0]-1):
+            for j in range(1, m[1]-1):
+                array = np.array([[i, j]])
+                adjs = self.__find_adj_tile_locations(array)
+                count = 0
+                unavailable = []
+                for adj in adjs:
+                    matches = np.where((self.existing == adj).all(axis=1))
+                    if matches[0].any():
+                        count += 1
+                        unavailable.append(np.array([matches[0], matches[1]]))
+                if count >= 2:
+                    adj_shape = self.__patterns2(i)
+                    for k in range(0, 1):
+                        for j in range(0, 1):
+                            for shape in self.hex_patterns:
+                                placement = np.add(shape, array)
+
+                    available.append()
+
+
         # for i in range(0, 1):
         #     for j in range(0, 1):
         #         sp = np.subtract(loc, [-1 * i, -1 * j])
@@ -309,7 +345,6 @@ class Map:
         #                 placement[sp[0]:sp[0] + 1, sp[1]:sp[1] + 1] = tile_lay
         #                 possible_placements.append(placement)
         #
-
 
         # print(adjs)
         # for pair in itertools.combinations(adjs, 2):
@@ -357,6 +392,13 @@ class Map:
         if row_index % 2 == 1:
             return self.pattern_1
         return self.pattern_2
+
+    def __patterns2(self, row_index):
+        """way of converting vertical hex grids into matrcies"""
+        if row_index % 2 == 1:
+            return self.pattern_3
+        return self.pattern_4
+
 
     @staticmethod
     def hex_patterns():
