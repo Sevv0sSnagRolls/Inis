@@ -215,4 +215,4 @@ if __name__ == "__main__":
     map = Map(testlist, matplotlibcolours)
     for i in range(0, 4):
         map.add_tile()
-        map.render()
+    map.render()

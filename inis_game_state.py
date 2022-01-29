@@ -1,15 +1,32 @@
 """
-Module which holds a class that contains all information about the game state
-There are a few methods on the class itself, but the core struct is small so should be fast to copy()
+Inis Game State.py
 
-Adjacent Tiles
-# Inis_game_state holds a method to find adjacent tiles and has a dictionary component which keeps
-        # this information up to date
-        # dictionary of form { tile_id : [adj_tile_id, adj_tile_id....], tile_id_2, [], ... }
 
-Player vzictory Conditions
-#unsure how to store this right now...
+Inis Main
+- Optional Setups
+- Game Type and Player selection
 
+Game Logic -> f(gamestate)
+
+----------
+Game State
+----------
+  |
+  - Map
+  |
+  = Tile Deck - Tile_0, Tile_1, Tile_2....
+  |
+  - Action Card Deck - Action_Card_0 , Action_Card_1
+  |
+  - Advantage Card Deck - Advantage_Card_0 , Advantage_Card_1
+  |
+  - Epic Tale Card Deck - Epic_tale_Card_0 , Epic_tale_Card_1
+  |
+  - Victory Conditions
+  |
+  - Player Agents
+  |
+  - Game Log
 
 """
 import numpy as np
@@ -70,6 +87,7 @@ class InisGameState:
     def __find_available_exploration_locations(self):
         pass
 
+
     #Placements/Interactions----------------------------------------------
     def add_sanctuary(self, position) -> bool:
         """Add sanctuary to given tile index (in tiles dict)"""
@@ -108,6 +126,7 @@ class InisGameState:
             self.players[player_id].deeds += 1
             return True
         return False
+
 
     # Placements/Interactions----------------------------------------------
     def __find_chieftans(self):
@@ -337,6 +356,7 @@ class victory_conditions():
 
 if __name__=="__main__":
     #Test 1 - Build a new game setup?
+    import inis_player_agents
 
     player_0 = {
                 'name' : 'Doug',
@@ -365,6 +385,6 @@ if __name__=="__main__":
                       3: player_3
                     }
 
-    setup_inis(player_agents)
+
 
 
