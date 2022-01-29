@@ -1,185 +1,220 @@
 """
-inis_map.py
 
-this was painful
 """
-
+import itertools
 import random
 import numpy as np
-import itertools
 import matplotlib.pyplot as plt
-from matplotlib.patches import Circle, RegularPolygon
+import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
+import matplotlib.colors as mcolors
+from scipy.optimize import minimize
 
+class Tile:
 
-#actually stupid, maybe matrix rep was better....
-class Map:
-    """
-    Actually had a stroke making this. Seems fucking dumb
-    """
+    def __init__(self, centre, hexes, colour):
+        self.centre = centre
+        self.hexes = hexes
+        self.colour = colour
 
-    def __init__(self, l:int, initial_tiles: dict, r=1, initial_point=np.array( [0.0,0.0] ),
-                hex_grid_orientation=np.pi/2):
-
-        #l is the length of the tile deck/number of lands to make sure arrays have correct mem size
-        #C based
-        self.l = l
-
-        # dict (index of tile: tileobjectinstance)
-        self.tile_objects = initial_tiles
-
-        #bundle tiles by index into groups of three
-        self.tiles_positions = np.inf*np.ones( (self.l, 3, 2) )
-
-        self.r = r
-        self.initial_point = initial_point
-        self.hex_grid_orientation = hex_grid_orientation
-        self.hex_frontier = []
-        self.explored_tile_positions = np.empty( (self.l, 2) )
-
-        # dodgy pointer to tiles location....
-        self.tiles_in_game_index = 0
-
-        #np.array( [hex_x, hex_y], [hex_x2, ...], ....)
-        self.renderHexGrid(self.hex_frontier, self.r)
-
-        self.__initialise()
-
-    def player_select_tile(self, player:object, tile:object):
-        """interface for external objects for players to generate exploration locations"""
-        options = self.__generate_placement_options()
-        selected_position = self.__prompt_player_selection(player, options)
-        self.__add_tile_to_instance(selected_position, tile)
-
-    def __select_tile_random(self, tile: dict):
-        """Returns a list of positble locations to place the tile. Player will then select as handled by game"""
-        options = self.explore_hex_frontier()
-        self.__add_tile_to_instance(random.choice(options), tile)
-        return random.choice(options)
-
-    def __add_tile_to_instance(self, positions, tile:dict):
-        self.tiles_in_game_index += 1
-        self.tiles_positions[self.i] = positions
-        self.tile_objects.update(tile)
-
-    def __initialise(self):
-        """Give everything a starting value to allow exploration function to work"""
-        #self.tiles[self.tiles_in_game] = self.hex_frontier
-        #add two more random tiles
-        self.hex_centres(self.inital_point, self.hex_grid_orientation, r, qty=3)
-        for i in range(1, len(self.tile_objects)):
-            self.__select_tile_random(self, self.tile_objects[i])
-        print(self.tiles)
-
-    def __explore_hex_frontier(self):
-        """Find new adj tile locations, return list of options"""
-        """Currently inefficient, hoping to add frontier element to reduce iterating over 'landlocked' hexes"""
-        possible_locations = []
-        self.__update_explored_tiles()
-        for tile in self.explored_tile_positions:
-            for adj_pos in self.hex_centres(tile, self.hex_grid_orientation, 6, self.r):
-                # find distances and if it already exists
-                c = np.linalg.norm(np.subtract(self.explored_tile_positions, adj_pos), axis=1)
-                if np.size(np.where(c==0)) == 0:
-                    if np.size(np.where((c-self.r-10**-9) <= 0)) >= 2:
-                        possible_locations.append(adj_pos)
-                        print(possible_locations)
-                    else:
-                        self.hex_frontier.append(adj_pos)
-        return possible_locations
-
-    def __generate_placement_options(self, initialise=False):
-        """Takes hexes, check adjaceny to existing hexes"""
-        options = self.explore_hex_frontier()
-        #for option in options:
-        #im not doing this complex shit for now jfc
+    def render(self):
         pass
 
-    def __prompt_player_selection(self, player:object, options: list) -> 'numpy array':
-        """Handles player selection and validation. Player class need method select tile..."""
-        i = 0
-        selection_valid = False
-        selected_tile_location = np.empty((2,1))
-        while not selection_valid or i <= 10:
-            selected_tile_location = player.select_tile(options)
-            if selected_tile_location in options:
-                selection_valid = True
-            if i == 10:
-                print('Too many invalid selections for tile location')
-            i += 1
-        return True, selected_tile_location
 
-    def __update_explored_tiles(self):
-        self.explored_tile_positions = [exp for tile in self.tiles for exp in tile]
+class Map:
+
+    def __init__(self, initial_tiles: list, colours, radius=1, hex_grid_orientation=np.pi / 2):
+
+        self.colours = colours
+
+        self.r = radius
+        self.hex_grid_orientation = hex_grid_orientation
+
+        # initialise calculated values for later
+        self.points = []  # init for calculations later
+        self.hexes = []  # init for calculations later
+
+        # run setup function
+        self.tiles = []
+        self.setup(initial_tiles)
+
+    def setup(self, initial_tiles):
+        """make initial tiles and positions"""
+        inital_point = np.array([0, 0])
+        centre = inital_point
+        hexes = self.find_hexagon_points(centre, self.r, self.hex_grid_orientation, qty=3)
+        colour = random.choice(self.colours)
+        self.colours.pop(self.colours.index(colour))
+        self.tiles.append(Tile(centre, hexes, colour))
+
+        distance1 = np.array([-1 * 4 * self.r * np.cos(2 * np.pi / 6 * 1 / 2), 0])
+        centre = np.add(inital_point, distance1)
+        hexes = self.find_hexagon_points(centre, self.r, self.hex_grid_orientation, qty=3)
+        colour = random.choice(self.colours)
+        self.colours.pop(self.colours.index(colour))
+        self.tiles.append(Tile(centre, hexes, colour))
+
+        distance2 = np.array([-1 * 2 * self.r * np.cos(2 * np.pi / 6 * 1 / 2), 2 * self.r])
+        centre = np.add(inital_point, distance2)
+        hexes = self.find_hexagon_points(centre, self.r, 2 * np.pi / 6 * 1 / 2, qty=3)
+        colour = random.choice(self.colours)
+        self.colours.pop(self.colours.index(colour))
+        self.tiles.append(Tile(centre, hexes, colour))
+
+    def add_tile(self):
+        """finds placements that can go on a single point"""
+        options = self.find_possible_placements()
+        select_spot = random.choice(options)
+        colour = random.choice(self.colours)
+        self.colours.pop(self.colours.index(colour))
+        self.tiles.append(Tile(select_spot[0], select_spot[1], colour))
+
+    def find_possible_placements(self):
+        """find wehere to place next to two adjacent tiles"""
+        pointData = []
+        explored_points = []
+        hexes = []
+        for tile in self.tiles:
+            for hexC in tile.hexes:
+                for point in self.find_hexagon_points(hexC, self.r, self.hex_grid_orientation):
+                    if len(pointData):
+                        distance = np.linalg.norm(np.subtract(explored_points, point), axis=1)
+                        location = np.where(distance < self.r/100)[0]
+                        print(location)
+                        if len(location):
+                            # fucking hate np where return format jfc
+                            pointData[location[0]][1].append(hexC)
+                            if tile not in pointData[location[0]][2]:
+                                pointData[location[0]][2].append(tile)
+                        else:
+                            # if point doesn't exist, add it and add 1 to count
+                            pointData.append([point, [hexC], [tile]])
+                            explored_points.append(point)
+                    else:
+                        pointData.append([point, [hexC], [tile]])
+                        explored_points.append(point)
+                if len(hexes):
+                    if not (hexC == hexes).all(axis=1).any():
+                        hexes.append(hexC)
+                else:
+                    hexes.append(hexC)
+        hexes = np.array(hexes)
+
+        self.adjpoints = []
+        for pData in pointData:
+            if len(pData[1]) == 2 and len(pData[2])==2:
+                self.adjpoints.append(pData[0])
+        print(self.adjpoints)
+        self.render()
+
+        possible_positions = []
+        for pData in pointData:
+            if len(pData[1]) == 2:
+                point = pData[0]
+                # bounds = [[self.r*-100, self.r*100], [self.r*-100, self.r*100]]
+                # newHexCentre = minimize(zero, point, method='Nelder-Mead', args=(pData[1][0], pData[1][1]), bounds=bounds)
+
+                # vector = np.subtract(pData[1][1], pData[1][0])
+                # midPoint = np.add(vector, pData[1][0])
+                # initial_vector = np.array([1, 0])
+                # angle1 = np.dot(initial_vector, point)
+                # angle2 = np.dot(initial_vector, pData[1][1])
+                # vector = np.array( [np.linalg.norm(vector), 0])
+                # if angle1 < angle2:
+                #     # theta = 2*np.pi/6
+                #     theta = angle2 - np.pi/2
+                # else:
+                #     theta = -2*np.pi / 6
+                #     theta = angle2 + np.pi / 2
+                # rotation_matrix = np.array( [ [np.cos(theta), -1*np.sin(theta)],
+                #                               [np.sin(theta),    np.cos(theta)] ])
+                # newHexCentre = np.add( np.dot(vector, rotation_matrix), pData[1][0])
+                #
+                g1 = self.find_hexagon_points(pData[1][0], 2*self.r * np.cos(2 * np.pi / 6 * 1 / 2), 0)
+                g2 = self.find_hexagon_points(pData[1][1], 2*self.r * np.cos(2 * np.pi / 6 * 1 / 2), 0)
+                # print(g1)
+                # print(g2)
+                # print(hexes)
+                for g in g2:
+                    # print(g)
+                    distance1 = np.linalg.norm( np.subtract(g1, g), axis=1 )
+                    distance2 = np.linalg.norm( np.subtract(hexes, g), axis=1)
+                    # print("d1: ", distance1)
+                    # print("d2: ", distance2)
+                    # print("w1: ", np.where(distance1 < self.r / 100)[0])
+                    # print("w2: ", np.where(distance2 < self.r / 100)[0])
+                    if len(np.where(distance1 < self.r/100)[0]) > 0 and ( len(np.where(distance2 < self.r/100)[0]) == 0 ):
+                        # print("YAY")
+                        # print("d1: ", distance1)
+                        # print("d2: ", distance2)
+                        # print("w1: ", np.where(distance1 < self.r / 100)[0])
+                        # print("w2: ", np.where(distance2 < self.r / 100)[0])
+                        newHexCentre = g.copy()
+                        break
+                surrounding_hexes = self.find_hexagon_points(newHexCentre, 2*self.r*np.cos(2*np.pi/6 * 1/2), 0)
+                # print(pData[0])
+                # print(pData[1][0])
+                # print(pData[1][1])
+                # print("centre ", newHexCentre)
+                # print(surrounding_hexes)
+                available_hex_group = [newHexCentre]
+                for aHex in surrounding_hexes:
+                    if not (np.subtract(hexes, aHex) < self.r / 1000).all(axis=1).any():
+                        available_hex_group.append(aHex)
+                possible_positions.append(available_hex_group)
+
+        options = []
+        for position in possible_positions:
+            print("position ", position)
+            if len(position) == 3:
+                for hex_trio in itertools.combinations(position, 3):
+                    print("trio ", hex_trio)
+                    distances = []
+                    for pair in itertools.combinations(hex_trio, 2):
+                        print(pair)
+                        distances.append(np.linalg.norm(np.subtract(pair[0], pair[1])))
+                    print("distances ", distances)
+                    if (np.abs(distances[0] - distances[1]) < self.r / 1000) and \
+                            (np.abs(distances[1] - distances[2]) < self.r / 1000) and \
+                            (np.abs(distances[2] - distances[1]) < self.r / 1000):
+                        centre = np.average([position for position in hex_trio])
+                        print("centres ", centre)
+                        options.append([centre, hex_trio])
+
+        return options
 
     @staticmethod
-    def hex_centres(hex_centre, hex_grid_orientation, r:float, qty=6):
-        """Eavluates hexes around a point based off start rotation etc"""
-        return np.add( np.array( [ [ r*np.cos(i*2*np.pi/qty + hex_grid_orientation),
-                                     r*np.sin(i*2*np.pi/qty + hex_grid_orientation) ]
-                                     for i in range(0, qty) ] ), hex_centre )
+    def find_hexagon_points(hex_centre, radius: float, hex_grid_orientation: float, qty=6):
+        """returns a list of six points surrounding a hex centre"""
+        return np.add(np.array([[radius * np.cos(i * 2 * np.pi / qty + hex_grid_orientation),
+                                 radius * np.sin(i * 2 * np.pi / qty + hex_grid_orientation)]
+                                for i in range(0, qty)]), hex_centre)
 
-    def renderHexGrid(self, hex_centres, radius):
+    def render(self):
         fig, ax = plt.subplots()
         patches = []
-        for hex in hex_centres:
-            patches.append(mpatches.RegularPolygon(hex, 6, radius) )
-        collection = PatchCollection(patches)
+        for tile in self.tiles:
+            for hexC in tile.hexes:
+                patches.append(mpatches.RegularPolygon(hexC, 6, self.r, facecolor=tile.colour))
+        for point in self.adjpoints:
+            patches.append(mpatches.Circle(point, self.r/10, facecolor='r'))
+        collection = PatchCollection(patches, match_original=True)
+        ax.add_collection(collection)
         ax.add_collection(collection)
         plt.autoscale()
         plt.show()
 
 
-if __name__ == '__main__':
-    tiles = {'0': [5, 'lime'], '1': [6, 'darkorange'], '2': [6, 'chocolate'], '3': [6, 'blue']}
-    test = Map(tiles)
+# def zero(guess, point1, point2):
+#     l1 = np.linalg.norm( np.subtract(point2, point1) )
+#     l2 = np.linalg.norm( np.subtract(guess, point1) )
+#     l3 = np.linalg.norm( np.subtract(guess, point2) )
+#     return 2*l1 - (l2 + l3)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    testlist = []
+    matplotlibcolours = list(mcolors.CSS4_COLORS.keys())
+    map = Map(testlist, matplotlibcolours)
+    for i in range(0, 4):
+        map.add_tile()
+        map.render()
