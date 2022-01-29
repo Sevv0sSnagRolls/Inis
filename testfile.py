@@ -80,7 +80,6 @@ class Map:
                     if len(pointData):
                         distance = np.linalg.norm(np.subtract(explored_points, point), axis=1)
                         location = np.where(distance < self.r/100)[0]
-                        print(location)
                         if len(location):
                             # fucking hate np where return format jfc
                             pointData[location[0]][1].append(hexC)
@@ -100,17 +99,15 @@ class Map:
                     hexes.append(hexC)
         hexes = np.array(hexes)
 
-        self.adjpoints = []
-        for pData in pointData:
-            if len(pData[1]) == 2 and len(pData[2])==2:
-                self.adjpoints.append(pData[0])
-        print(self.adjpoints)
-        self.render()
+        # self.adjpoints = []
+        # for pData in pointData:
+        #     if len(pData[1]) == 2 and len(pData[2])==2:
+        #         self.adjpoints.append(pData[0])
+        # self.render()
 
         possible_positions = []
         for pData in pointData:
-            if len(pData[1]) == 2:
-                point = pData[0]
+            if len(pData[1]) == 2 and len(pData[2])==2:
                 # bounds = [[self.r*-100, self.r*100], [self.r*-100, self.r*100]]
                 # newHexCentre = minimize(zero, point, method='Nelder-Mead', args=(pData[1][0], pData[1][1]), bounds=bounds)
 
@@ -143,7 +140,7 @@ class Map:
                     # print("d2: ", distance2)
                     # print("w1: ", np.where(distance1 < self.r / 100)[0])
                     # print("w2: ", np.where(distance2 < self.r / 100)[0])
-                    if len(np.where(distance1 < self.r/100)[0]) > 0 and ( len(np.where(distance2 < self.r/100)[0]) == 0 ):
+                    if len(np.where(distance1 < self.r/100)[0]) > 0 and (len(np.where(distance2 < self.r/100)[0])==0):
                         # print("YAY")
                         # print("d1: ", distance1)
                         # print("d2: ", distance2)
@@ -151,7 +148,7 @@ class Map:
                         # print("w2: ", np.where(distance2 < self.r / 100)[0])
                         newHexCentre = g.copy()
                         break
-                surrounding_hexes = self.find_hexagon_points(newHexCentre, 2*self.r*np.cos(2*np.pi/6 * 1/2), 0)
+                surrounding_hexes = self.find_hexagon_points(newHexCentre, 2*self.r*np.cos(2*np.pi/6*1/2), 0)
                 # print(pData[0])
                 # print(pData[1][0])
                 # print(pData[1][1])
@@ -159,28 +156,29 @@ class Map:
                 # print(surrounding_hexes)
                 available_hex_group = [newHexCentre]
                 for aHex in surrounding_hexes:
-                    if not (np.subtract(hexes, aHex) < self.r / 1000).all(axis=1).any():
+                    distance = np.linalg.norm(np.subtract(hexes, aHex), axis=1)
+                    if len(np.where(distance < self.r/100)[0]) == 0:
                         available_hex_group.append(aHex)
                 possible_positions.append(available_hex_group)
 
+        print(possible_positions)
         options = []
         for position in possible_positions:
             print("position ", position)
-            if len(position) == 3:
-                for hex_trio in itertools.combinations(position, 3):
-                    print("trio ", hex_trio)
-                    distances = []
-                    for pair in itertools.combinations(hex_trio, 2):
-                        print(pair)
-                        distances.append(np.linalg.norm(np.subtract(pair[0], pair[1])))
-                    print("distances ", distances)
-                    if (np.abs(distances[0] - distances[1]) < self.r / 1000) and \
-                            (np.abs(distances[1] - distances[2]) < self.r / 1000) and \
-                            (np.abs(distances[2] - distances[1]) < self.r / 1000):
-                        centre = np.average([position for position in hex_trio])
-                        print("centres ", centre)
-                        options.append([centre, hex_trio])
-
+            for hex_trio in itertools.combinations(position, 3):
+                print("trio ", hex_trio)
+                distances = []
+                for pair in itertools.combinations(hex_trio, 2):
+                    print(pair)
+                    distances.append(np.linalg.norm(np.subtract(pair[0], pair[1])))
+                print("distances ", distances)
+                if (np.abs(distances[0] - distances[1]) < self.r / 1000) and \
+                        (np.abs(distances[1] - distances[2]) < self.r / 1000) and \
+                        (np.abs(distances[2] - distances[1]) < self.r / 1000):
+                    centre = np.average([position for position in hex_trio])
+                    print("centres ", centre)
+                    options.append([centre, hex_trio])
+        print(options)
         return options
 
     @staticmethod
@@ -196,8 +194,8 @@ class Map:
         for tile in self.tiles:
             for hexC in tile.hexes:
                 patches.append(mpatches.RegularPolygon(hexC, 6, self.r, facecolor=tile.colour))
-        for point in self.adjpoints:
-            patches.append(mpatches.Circle(point, self.r/10, facecolor='r'))
+        # for point in self.adjpoints:
+        #     patches.append(mpatches.Circle(point, self.r/10, facecolor='r'))
         collection = PatchCollection(patches, match_original=True)
         ax.add_collection(collection)
         ax.add_collection(collection)
