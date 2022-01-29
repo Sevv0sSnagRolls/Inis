@@ -17,7 +17,6 @@ import inis_tiles
 class Map:
 
     def __init__(self, initial_tiles: dict, colours, radius=1, hex_grid_orientation=np.pi / 2):
-
         self.colours = colours
 
         self.r = radius
