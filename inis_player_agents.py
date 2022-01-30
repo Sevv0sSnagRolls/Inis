@@ -2,7 +2,7 @@
 
 """
 from abc import ABC, abstractmethod
-
+import re
 
 class agent(ABC):
     """
@@ -20,44 +20,23 @@ class agent(ABC):
         4.2) Peacefully resolve?
         4.3) Attack, retreat,
     """
-    def __init__(self, player_id: int, name: str):
-        self.player_id = player_id
-
+    def __init__(self, name: str):
+        self.player_id = None
         self.name = name
-        #points to instances of player classes created which agent can use to model, simulate and store
-        #visibile information about other players in the game
-        #constructed as a list with the player_id == the player id/index of player in the game
-        #so game state winners can "easily" be converted to mapping out what players might do...
-        #self.reference_players = {}
-
-        #game object for reference that gets updated as part of each main game loop
-        #this allows agent to simulate or model shit...
-        #self.reference_game = None
-
         self.is_bren = False
         self.clans_in_reserve = 12
         self.deeds = 0
-        # Hand ==  list of card objects. Each Card has a name, type and function which is points to
-        # Each Card will accept the game object and player and return the possible outcomes
-        # from playing the card
-        # the actual logic of what cards can be played in what order (permutations) for each turn
-        # is left up to a function in this player class
         self.hand = []
 
     def generate_list_of_possible_actions(self, game, *hand):
-        '''
-        The idea of the function is to work out what combinations of cards can be played
-
-        '''
-        hand = self.hand if not hand
-
-        for card in hand:
-            actions.append(card(game, self.player_ID))
-
+        """Combinations of cards can be played"""
+        # hand = self.hand if not hand
+        # for card in hand:
+        #     actions.append(card(game, self.player_ID))
         return
 
     def turn_actions(self):
-
+        pass
 
     @abstractmethod
     def draft_phase_select_cards(self):
@@ -96,34 +75,38 @@ class human_agent(agent):
     Extends to funcationality to have terminal interaction with the game or potentially pygame if I cbf
     '''
 
-    @abstractmethod
-    def draft_phase_select_cards(self, possible_hands_to_keep):
-        """
-        :return:
-        """
-        print(self.player.hand)
-        selected = raw_input('Select Card to play via index in hand: [0,1,2,3]': )
-        return selected
+    def draft_phase_select_cards(self, possible_hands_to_keep) -> list:
+        """Shoulw be able to display hand and allow selection via indexes"""
+        for i, hand in enumerate(possible_hands_to_keep):
+            print("Hand Option ", i)
+            for card in hand:
+                card.display_card()
+        input_valid = False
+        # num_format = re.compile(r'^\-?[1-9][0-9]*$')
+        while not input_valid:
+            user_input = input("Select Hand Via Index 0, 1, 2...: ")
+            if not user_input.isnumeric():
+                print("input invalid, try a number")
+            elif int(user_input) < 0 or int(user_input) > len(possible_hands_to_keep):
+                print("input invalid, try a number in the available range")
+            else:
+                input_valid = True
+        return possible_hands_to_keep[int(user_input)]
 
-    @abstractmethod
     def play_turn(self):
         pass
 
-    @abstractmethod
     def play_triskel_action(self):
         pass
 
-    @abstractmethod
     def play_clash_citadels(self):
         """Hide in a citadel or not?"""
         pass
 
-    @abstractmethod
     def play_resolve_clash(self):
         """Peacefully resolve request?"""
         pass
 
-    @abstractmethod
     def play_clash_manouevre(self):
         """play manouevres"""
         pass
@@ -134,7 +117,6 @@ class dumbass_test_agent(agent):
     Extends to funcationality to have terminal interaction with the game or potentially pygame if I cbf
     '''
 
-    @abstractmethod
     def draft_phase_select_cards(self, possible_hands_to_keep: list):
         """
         :param: possible_hands_to_keep
@@ -144,25 +126,20 @@ class dumbass_test_agent(agent):
         """
         return possible_hands_to_keep[0]
 
-    @abstractmethod
     def play_turn(self):
         pass
 
-    @abstractmethod
     def play_triskel_action(self):
         pass
 
-    @abstractmethod
     def play_clash_citadels(self):
         """Hide in a citadel or not?"""
         pass
 
-    @abstractmethod
     def play_resolve_clash(self):
         """Peacefully resolve request?"""
         pass
 
-    @abstractmethod
     def play_clash_manouevre(self):
         """play manouevres"""
         pass

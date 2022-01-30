@@ -11,7 +11,7 @@ TILES = [
          ['Salt Mine',             "StandardTile",      {'matplotlib' : 'slategrey'}  ],
          ['Valley',                "StandardTile",      {'matplotlib' : 'darkorange'} ],
          ['Hills',                 "StandardTile",      {'matplotlib' : 'darkkhaki'}  ],
-         ['Plains',                "StandardTile",      {'matplotlib' : 'mediumaquqmarine'} ],
+         ['Plains',                "StandardTile",      {'matplotlib' : 'mediumaquamarine'} ],
          ['Mountains',             "Mountains",         {'matplotlib' : 'lavender'}   ],
          ['Lost Vale',             "StandardTile",      {'matplotlib' : 'teal'}       ],
          ['Gates Of Tir Na Nog',   "GatesOfTirNaNog",   {'matplotlib' : 'lawngreen'}  ],
@@ -23,7 +23,7 @@ TILES = [
          ['Meadows',               "StandardTile",      {'matplotlib' : 'springgreen'} ],
          ['Misty Lands',           "StandardTile",      {'matplotlib' : 'indigo'}      ],
          ['Cove',                  "StandardTile",      {'matplotlib' : 'pink'}        ],
-         ['Iron Mine',             "StandardTile",      {'matplotlib' : 'goldenred'}   ],
+         ['Iron Mine',             "StandardTile",      {'matplotlib' : 'goldenrod'}   ],
         ]
 
 

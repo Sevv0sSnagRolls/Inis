@@ -31,6 +31,7 @@ class _Tile(ABC):
     def __init__(self):
         self.centre = []
         self.hexes = []
+        self.adj = []
 
     @abstractmethod
     def tile_action(self, inis_game_state):
@@ -72,8 +73,7 @@ class _TileTypes:
             self.colour = colour
 
         def tile_action(self, inis_game_state):
-            if inis_game_state.turn_direction != inis_game_state.previous_turn_direction:
-                tile_location = inis_game_state.tiles([])
+            pass
             return None
 
     class _GatesOfTirNaNog(_Tile):
@@ -89,7 +89,7 @@ class _TileTypes:
 
         def tile_action(self, inis_game_state):
             if inis_game_state.turn_direction != inis_game_state.previous_turn_direction:
-                tile_location = inis_game_state.tiles([])
+                pass
             return None
 
     class _StoneCircle(_Tile):
@@ -103,7 +103,7 @@ class _TileTypes:
 
         def tile_action(self, inis_game_state):
             if inis_game_state.turn_direction != inis_game_state.previous_turn_direction:
-                tile_location = inis_game_state.tiles([])
+                pass
             return None
 
 

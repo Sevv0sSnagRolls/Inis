@@ -2,10 +2,11 @@
 ----------------------------------------------
 inis_main.py
 ---------------------------------------------
-Here to be process director for either using pygame or wtv for setups and divert
-for AI only play, human play who knows.
-"""
 
+"""
+import setup_new_inis_game
+import inis_game_logic
+import inis_player_agents
 
 def main() -> None:
     """
@@ -34,8 +35,8 @@ def start_new_game() -> None:
     :return:
     """
     player_agents = select_players()
-    current_game = setup_inis(player_agents)
-    #inis_game_logic.play_inis_game(current_game)
+    current_game = setup_new_inis_game.setup_inis(player_agents)
+    inis_game_logic.play_inis_game(current_game)
     return current_game
 
 
@@ -44,33 +45,13 @@ def select_players() -> dict:
     Need some method of selecting who is playing each game
     :return:
     """
-    player_0 = {
-                name: 'Doug',
-                player_agent: inis_player_agents.dumbass_test_agent()
-                }
+    game_player_agents = [ inis_player_agents.human_agent("test1"),
+                           inis_player_agents.human_agent("test1") ]
+                      # '2':inis_player_agents.dumbass_test_agent(0, "test1"),
+                      # '3':inis_player_agents.dumbass_test_agent(0, "test1")
+                      # }
 
-    player_1 = {
-                name: 'John',
-                player_agent: inis_player_agents.dumbass_test_agent()
-                }
-
-    player_2 = {
-                name: 'Brad',
-                player_agent: inis_player_agents.dumbass_test_agent()
-                }
-
-    player_3 = {
-                name: 'Test 2',
-                player_agent: inis_player_agents.dumbass_test_agent()
-                }
-
-    player_agents = { 0: player_0,
-                      1: player_1,
-                      2: player_2,
-                      3: player_3
-                      }
-
-    return player_agents
+    return game_player_agents
 
 
 def watch_game(database, game_index) -> None:

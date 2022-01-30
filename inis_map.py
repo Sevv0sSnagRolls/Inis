@@ -16,18 +16,20 @@ import inis_tiles
 
 class Map:
 
-    def __init__(self, initial_tiles: dict, colours, radius=1, hex_grid_orientation=np.pi / 2):
-        self.colours = colours
+    def __init__(self, initial_tiles: list, colours=None, radius=1, hex_grid_orientation=np.pi / 2):
 
         self.r = radius
         self.hex_grid_orientation = hex_grid_orientation
+
+        if colours:
+            self.colours = colours
 
         # initialise calculated values for later
         self.points = []  # init for calculations later
         self.hexes = []  # init for calculations later
 
         # run setup function
-        self.tiles = [initial_tiles]
+        self.tiles = initial_tiles
         self._setup()
 
     def _setup(self):
@@ -35,12 +37,18 @@ class Map:
         initial_point = np.array([0, 0])
         vector1 = np.array([-1 * 4 * self.r * np.cos(2 * np.pi / 6 * 1 / 2), 0])
         vector2 = np.array([-1 * 2 * self.r * np.cos(2 * np.pi / 6 * 1 / 2), 2 * self.r])
-        vectors = [initial_point, vector1, vector2]
-        for i, dist in enumerate(vectors):
-            centre = np.add(initial_point, dist)
-            hexes = self.find_hexagon_points(centre, self.r, self.hex_grid_orientation, qty=3)
+        vector3 = np.array([ 1 * 2 * self.r * np.cos(2 * np.pi / 6 * 1 / 2), 2 * self.r])
+        vectors = [initial_point, vector1, vector2, vector3]
+        orientations = [self.hex_grid_orientation, self.hex_grid_orientation, 2*np.pi/6*1/2, 2*np.pi/6*1/2]
+        n = len(self.tiles) if len(self.tiles) >= 3 else 3
+        for i in range(0, n):
+            centre = np.add(initial_point, vectors[i])
+            hexes = self.find_hexagon_points(centre, self.r, orientations[i], qty=3)
             self.tiles[i].centre = centre
             self.tiles[i].hexes = hexes
+        self.find_adj()
+        # for tile in self.tiles:
+        #     print(tile, tile.adj)
 
     def player_add_tile(self, player, tile):
         """public method for game to call for exploration card"""
@@ -65,17 +73,18 @@ class Map:
 
     def __add_tile(self, selected_position, tile):
         """Finally, adds the selection to the object"""
+        tile.centre = selected_position[0]
+        tile.hexes = selected_position[1]
         self.tiles.append(tile)
-        self.tiles[-1].centre = selected_position[0]
-        self.tiles[-1].hexes = selected_position[1]
 
-    def _add_tile_randomly(self):
+    def _add_tile_randomly(self, tile):
         """finds placements that can go on a single point"""
         options = self.find_possible_placements()
         select_spot = random.choice(options)
-        colour = random.choice(self.colours)
-        self.colours.pop(self.colours.index(colour))
-        self.tiles.append(Tile(select_spot[0], select_spot[1], colour))
+        self.__add_tile(select_spot, tile)
+        # colour = random.choice(self.colours)
+        # self.colours.pop(self.colours.index(colour))
+        # self.tiles.append(Tile(select_spot[0], select_spot[1], colour))
 
     def _find_possible_placements(self) -> list:
         """find wehere to place next to two adjacent tiles"""
@@ -145,8 +154,23 @@ class Map:
                     centre = np.average([position for position in hex_trio])
                     options.append([centre, hex_trio])
 
+        self.find_adj()
+
         #returns [ [centrePoint, hexes], [centrePoint, hexes], ...]
         return options
+
+    def find_adj(self):
+        for tile1 in self.tiles:
+            for tile2 in self.tiles:
+                if tile1 != tile2:
+                    for hex1 in tile1.hexes:
+                        for hex2 in tile2.hexes:
+                            distance = np.linalg.norm(np.subtract(hex2, hex1))
+                            if np.abs(distance - (2*self.r*np.cos(2*np.pi/6*1/2))) < self.r/100:
+                                if tile2 not in tile1.adj:
+                                    tile1.adj.append(tile2)
+                                if tile1 not in tile2.adj:
+                                    tile2.adj.append(tile1)
 
     @staticmethod
     def find_hexagon_points(hex_centre, radius: float, hex_grid_orientation: float, qty=6):
@@ -174,9 +198,9 @@ class Map:
 if __name__ == "__main__":
     testlist = []
     matplotlibcolours = list(mcolors.CSS4_COLORS.keys())
-    map = Map(testlist, matplotlibcolours)
+    map = Map(testlist, colours=matplotlibcolours)
     for i in range(0, 4):
-        map.add_tile()
+        map.__add_tile()
     map.render()
 
 

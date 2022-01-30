@@ -3,8 +3,8 @@
 inis_decks.py
 -----------------------------------------------------
 """
+import inis_cards
 import random
-from inis_cards import create_card_objects_from_module
 
 class inis_card_deck():
 
@@ -21,14 +21,17 @@ class inis_card_deck():
         assert qty or card_object_instance
 
         if card_object_instance:
+            """wtf was I doign here..???"""
             self.discard = self.cards.pop( self.cards.index(card_object_instance) )
             return card_object_instance
 
         assert qty <= self.deck_size
         if qty > len(self.cards): #kind of cheating here as it's not the proper way to use up a deck and then reshuffle discard...
             self.reset_deck()
-        self.discard += [self.cards.pop() for i in range(0, qty)]
-        return self.discard[-qty:]
+
+        dealt = [self.cards.pop(0) for _ in range(0, qty)]
+        self.discard += dealt
+        return dealt
 
     def _reset_deck(self):
         """Make discard into deck"""
@@ -44,19 +47,19 @@ class inis_card_deck():
     @classmethod
     def create_action_deck(cls, player_count: int) -> object:
         """Creates action card deck instance"""
-        cards = list(create_card_objects_from_module('inis_action_cards', player_count).values())
+        cards = list(inis_cards.create_card_objects_from_module('inis_action_cards', player_count).values())
         return cls('actionDeck', 'action', cards)
 
     @classmethod
     def create_advantage_deck(cls, player_count: int) -> object:
         """Creates action card deck instance"""
-        cards = list(create_card_objects_from_module('inis_advantage_cards', player_count).values())
+        cards = list(inis_cards.create_card_objects_from_module('inis_advantage_cards', player_count).values())
         return cls('advantageDeck', 'advantage', cards)
 
     @classmethod
     def create_epic_tale_deck(cls, player_count: int) -> object:
         """Creates action card deck instance"""
-        cards = list(create_card_objects_from_module('inis_epic_tale_cards', player_count).values())
+        cards = list(inis_cards.create_card_objects_from_module('inis_epic_tale_cards', player_count).values())
         return cls('epicTaleDeck', 'epic_tale', cards)
 
 

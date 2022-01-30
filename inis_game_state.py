@@ -34,19 +34,25 @@ import random
 
 class InisGameState:
 
-    def __init__(self, players: dict, tile_deck: object):
+    def __init__(self, players: list, tile_deck: object):
         self.players = players
+        for i, player in enumerate(self.players):
+            player.id = i
+        self.player_count = len(players)
 
         #Map
         self.tile_deck = tile_deck
-        self.map_size = self.tiles.size
+        n = len(self.players) if len(self.players) >= 3 else 3
+        self.tiles = [self.tile_deck.draw_tile() for _ in range(0, n)]
+        self.map_size_max = self.tile_deck.size
         self.adjacent_tiles = {}
+        self.map = None #is added later, reference to map object instance
 
         #Components
-        self.sanctuaries = np.zeros( (len(self.map_size)), dtype=int )
-        self.citadels = np.zeros((len(self.map_size)), dtype=int )
-        self.clans = np.zeros( (len(players), len(self.map_size)), dtype=int )
-        self.chieftans = np.copy(self.map_size) #chieftan of 0 is the Brenn
+        self.sanctuaries = -1*np.ones( (self.map_size_max), dtype=int )
+        self.citadels = -1*np.ones((self.map_size_max), dtype=int )
+        self.clans = -1*np.ones( (len(players), self.map_size_max), dtype=int )
+        self.chieftans = -1*np.ones( (self.map_size_max), dtype=int ) #chieftan of 0 is the Brenn
         """Form of clans
                    P1 P2 P3
         clans = [ [0, 0, 0 ],   #tile 1
@@ -62,19 +68,26 @@ class InisGameState:
         #setup semantics
         self.player_order = []
         self.turn_direction = 1
-        self.brenn = random.choice( list(self.players.keys()) )
+        self.brenn = None
 
         #Victory
         self.player_victory_conditions = []
         self.winner = None
+
+        self.tile_deck = None
+        self.action_deck = None
+        self.epic_tale_deck = None
+        self.advantage_deck = None
+        self.tile_advantage_pairs = None
 
     #Functionality for adding more attrs to class module after setup
     def add_attributes(self, **kwargs: dict) -> None:
         if len(kwargs) > 0:
             for key, value in kwargs.items():
                 setattr(self, key, value)
-        return
 
+    def update(self):
+        pass
 
     #Placements/Interactions----------------------------------------------
     def add_sanctuary(self, position) -> bool:
@@ -116,7 +129,13 @@ class InisGameState:
         return False
 
 
-    # Placements/Interactions----------------------------------------------
+    # Assembly Phase----------------------------------------------
+    def assembly_phase_setup(self):
+        self.__find_chieftans()
+        self.__assign_advantage_cards()
+        self.__flip_crows_token()
+        self.__resolve_tile_actions()
+
     def __find_chieftans(self):
         """returns player with max clans in each tile, if max has two values. Sets to 0"""
         m, _ = np.shape(self.clans)
@@ -135,12 +154,12 @@ class InisGameState:
             if chieftan_index >= 0: #check for actual existance [-1 is noone is cheiftan]
                 tile = self.tiles[tile_index]
                 advantage_card = self.tile_advantage_pairs(tile)
-                self.players[chieftan_index].deal_card(advantage_card)
+                self.players[chieftan_index].hand.append(advantage_card)
 
     def __flip_crows_token(self):
         """Creates new player order"""
         self.previous_turn_direction = self.turn_direction
-        a = self.players.copy()
+        a = list( range(0, len(self.players)) )
         K = self.brenn
         f = random.choice([-1, 1])
         self.turn_direction = f
@@ -150,7 +169,13 @@ class InisGameState:
             self.player_order = [a[(K + i * f) % len(a)] for i in range(1, len(a))]
         return
 
-    def assembly_phase_check_for_victory(self):
+    def __resolve_tile_actions(self):
+        """Uses tile_index:advantage card pairing to deal cards to chieftans"""
+        for tile in self.tiles:
+            tile.tile_action(self)
+
+    #-Victory Conditions -------------------------------------------------------------
+    def assembly_phase_check_for_victory(self, player):
         '''
         Sorts out victory
 
@@ -159,10 +184,11 @@ class InisGameState:
         3) check for victory and resolve ties
         :return: victor
         '''
-        if player.has_pretender_token()
-            self.find_victory_conditions()
-
-        return winner
+        if player.has_pretender_token():
+            self.find_victory_conditions(player)
+        if victory:
+            return self.winner
+        return None
 
     def check_victory_conditions(self, player_id: int):
         """"""
