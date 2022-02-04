@@ -88,8 +88,9 @@ def connect_tiles_and_advantage_cards(tile_deck: object, advantage_deck: object)
     assert 'tiles' in dir(tile_deck)
     assert 'cards' in dir(advantage_deck)
 
-    tile_card_pairs = dict((tile, card) for tile in tile_deck.tiles \
-                           for card in advantage_deck.cards if tile.name == card.name)
+    tile_card_pairs = {str(tile): card for tile in tile_deck.tiles
+                       for card in advantage_deck.cards if tile.name == card.name}
+    print(tile_card_pairs)
     return tile_card_pairs
 
 
@@ -97,11 +98,11 @@ if __name__ == "__main__":
     # Test 1 - Build a new game setup?
     import inis_player_agents
 
-    game_player_agents = { '0':inis_player_agents.dumbass_test_agent(0, "test1"),
-                      '1':inis_player_agents.dumbass_test_agent(0, "test1"),
-                      '2':inis_player_agents.dumbass_test_agent(0, "test1"),
-                      '3':inis_player_agents.dumbass_test_agent(0, "test1")
-                      }
+    game_player_agents = {'0': inis_player_agents.dumbass_test_agent(0, "test1"),
+                          '1': inis_player_agents.dumbass_test_agent(0, "test1"),
+                          '2': inis_player_agents.dumbass_test_agent(0, "test1"),
+                          '3': inis_player_agents.dumbass_test_agent(0, "test1")
+                          }
 
     setup_inis(game_player_agents)
 
@@ -131,4 +132,3 @@ if __name__ == "__main__":
     #     2: player_2,
     #     3: player_3
     # }
-

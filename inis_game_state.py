@@ -68,7 +68,8 @@ class InisGameState:
         #setup semantics
         self.player_order = []
         self.turn_direction = 1
-        self.brenn = None
+        self.brenn = random.choice(list(range(0, self.player_count)))
+        self.chieftans[0] = self.brenn
 
         #Victory
         self.player_victory_conditions = []
@@ -152,21 +153,22 @@ class InisGameState:
         """Uses tile_index:advantage card pairing to deal cards to chieftans"""
         for tile_index, chieftan_index in enumerate(self.chieftans):
             if chieftan_index >= 0: #check for actual existance [-1 is noone is cheiftan]
-                tile = self.tiles[tile_index]
-                advantage_card = self.tile_advantage_pairs(tile)
-                self.players[chieftan_index].hand.append(advantage_card)
+                tile_obj = self.tiles[tile_index]
+                for tile, card in self.tile_advantage_pairs.items():
+                    if tile == tile_obj:
+                        self.players[chieftan_index].hand.append(card)
 
     def __flip_crows_token(self):
         """Creates new player order"""
         self.previous_turn_direction = self.turn_direction
-        a = list( range(0, len(self.players)) )
+        a = list(range(0, len(self.players)))
         K = self.brenn
         f = random.choice([-1, 1])
         self.turn_direction = f
         if f == -1:
-            self.player_order = [a[(K + i * f)] for i in range(1, len(a))]
+            self.player_order = [K] + [a[(K + i * f)] for i in range(1, len(a))]
         else:
-            self.player_order = [a[(K + i * f) % len(a)] for i in range(1, len(a))]
+            self.player_order = [K] + [a[(K + i * f) % len(a)] for i in range(1, len(a))]
         return
 
     def __resolve_tile_actions(self):

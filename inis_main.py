@@ -45,8 +45,8 @@ def select_players() -> dict:
     Need some method of selecting who is playing each game
     :return:
     """
-    game_player_agents = [ inis_player_agents.human_agent("test1"),
-                           inis_player_agents.human_agent("test1") ]
+    game_player_agents = [ inis_player_agents.human_agent("Dave"),
+                           inis_player_agents.human_agent("John") ]
                       # '2':inis_player_agents.dumbass_test_agent(0, "test1"),
                       # '3':inis_player_agents.dumbass_test_agent(0, "test1")
                       # }

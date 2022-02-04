@@ -85,10 +85,12 @@ def play_draft_phase(inis_game_state: object, hand_size: int, verbose=True) -> '
     #     pass
 
     # player order
-    player_order = itertools.cycle(inis_game_state.player_order)
+    player_order = itertools.cycle(inis_game_state.player_order.copy())
     # dodgily do the first step to setup for passing cards onwards
-    next(player_order)
+    next_player_id = next(player_order)
 
+    print(inis_game_state.player_order)
+    print("Brenn: ", inis_game_state.brenn)
     # Initialise the passed hands list/container
     # Need to make a dictionary so no confusion occur with the indexing
     passed_hands = {player_id: [] for player_id, player in enumerate(inis_game_state.players)}
@@ -100,9 +102,11 @@ def play_draft_phase(inis_game_state: object, hand_size: int, verbose=True) -> '
     # will then assign each dealt container to each hand via keys
     for i in hands.keys():
         hands[i] = inis_game_state.action_deck.deal_cards(hand_size)
+
     for qty_of_cards_to_keep in list(range(1, hand_size)):
         # would be a good place to include multithreading if I knew what was going on....
-        for player_id, player in enumerate(inis_game_state.players):
+        for player_id in inis_game_state.player_order.copy():
+            player = inis_game_state.players[player_id]
             selection_made = False
             valid_move = False
             selected_hand = None
@@ -118,7 +122,9 @@ def play_draft_phase(inis_game_state: object, hand_size: int, verbose=True) -> '
             drafted_hands[player_id] = selected_hand.copy()
             passed_hand = generate_passed_hand(hands[player_id], selected_hand)
             next_player_id = next(player_order)  # pull the next player from itertools.cycle
+            print('Next player: ', next_player_id)
             passed_hands[next_player_id] = passed_hand
+            print("Passed_Hands ", passed_hands)
             if verbose:
                 print("Drafting Phase")
                 print("Quantity of Cards to keep: " + str(qty_of_cards_to_keep))
@@ -131,6 +137,8 @@ def play_draft_phase(inis_game_state: object, hand_size: int, verbose=True) -> '
                 print(selected_hand)
                 print("Passed on Cards")
                 print(passed_hand)
+            print('A')
+        print('B')
         print(next_player_id)
         print(passed_hands)
         hands = pass_hands(drafted_hands.copy(), passed_hands)
